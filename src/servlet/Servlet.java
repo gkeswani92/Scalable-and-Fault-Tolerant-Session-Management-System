@@ -27,10 +27,8 @@ public class Servlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) 
 										throws ServletException, IOException {
 		
-		PrintWriter out = response.getWriter();
 		MySession newSession = null;
 		MyCookie newCookie = null;
-		Calendar cal = Calendar.getInstance();
 		
 		//Get all the cookie that was received in the request and find if any
 		//of them came from our server
@@ -63,37 +61,38 @@ public class Servlet extends HttpServlet {
 			newCookie = newSession.getCustomCookie();
 		}
 		
-		out.println("<html>");
-		out.println("<head> <title>Gaurav Keswani - gk368</title> </head>");
-		out.println("<body>");
-		out.println("<div class = 'row'>");
-		out.println("<b>NetID:</b> gk368");
-		out.println("<b>Session:</b>" + newCookie.getSessionID());
-		out.println("<b>Version: </b>" + newCookie.getVersionNumber());
-		out.println("<b>Date:</b>" + cal.getTime());
-		out.println("</div>");
-		out.println("<h1>" + newSession.getMessage() + "</h1>");
-		out.println("<form method='POST' action='/'>");
-		out.println("<div class='container'>");
-		out.println("<div class = 'row'>");
-		out.println("<input type='submit' name='replace' value='Replace' />");
-		out.println("<input type='text' name='message' />");
-		out.println("</div");
-		out.println("<div class = 'row'>");
-		out.println("<input type='submit' name='btn-refresh' value='Refresh' />");
-		out.println("</div>");
-		out.println("<div class = 'row'>");
-		out.println("<input type='submit' name='btn-logout' value='Logout' />");
-		out.println("</div");
-		out.println("</div>");
-		out.println("<br/><br/>");
-		out.println("<div class = 'row'>");
-		out.println("<b>Cookie: </b>" + newCookie.toString());
-		out.println("<b>Expires: </b> " + newSession.getExpirationDate());
-		out.println("</div>");
-		out.println("</form>");
-		out.println("</body>");
-		out.println("<html>");
+		//Render the web page with the details
+		displayWebPage(response, newCookie, newSession);
+	}
+
+	@Override
+	public void doPost(HttpServletRequest request, HttpServletResponse response) 
+										throws ServletException, IOException {
+		
+		//Get all the cookie that was received in the request and find the one 
+		//that was sent by our server. There has to be one since this is a POST
+		//request and one would have been created in the GET request
+		Cookie[] cookies =  request.getCookies();
+		Cookie cookie = findCorrectCookie(cookies);
+		String sessionID = cookie.getValue();
+		MySession session = sessionTable.getSession(sessionID);
+		MyCookie myCookie = session.getCustomCookie();
+		
+		if(request.getParameter("replace") != null){
+			System.out.println("The replace button has been pressed");	
+			String newState = request.getParameter("message");
+			System.out.println("The new state needs to be " + newState);
+			session.setMessage(newState);
+		} else if(request.getParameter("refresh") != null){
+			System.out.println("The refresh button has been pressed");
+			session.refreshSession();
+		} else {
+			System.out.println("The logout button has been pressed. Session being terminated");
+			sessionTable.terminateSession(sessionID);
+		}
+		
+		//Render the web page with the updated details
+		displayWebPage(response, myCookie, session);
 	}
 	
 	/**
@@ -115,9 +114,42 @@ public class Servlet extends HttpServlet {
 		return null;
 	}
 	
-	@Override
-	public void doPost(HttpServletRequest request, HttpServletResponse response) 
-										throws ServletException, IOException {
+	public void displayWebPage(HttpServletResponse response, MyCookie newCookie, 
+						MySession newSession) throws IOException{
 		
+		PrintWriter out = response.getWriter();
+		Calendar cal = Calendar.getInstance();
+		
+		out.println("<html>");
+		out.println("<head> <title>Gaurav Keswani - gk368</title> </head>");
+		out.println("<body>");
+		out.println("<div class = 'row'>");
+		out.println("<b>NetID:</b> gk368");
+		out.println("<b>Session:</b>" + newCookie.getSessionID());
+		out.println("<b>Version: </b>" + newCookie.getVersionNumber());
+		out.println("<b>Date:</b>" + cal.getTime());
+		out.println("</div>");
+		out.println("<h1>" + newSession.getMessage() + "</h1>");
+		out.println("<form method='POST' action='/Session_Management/'>");
+		out.println("<div class='container'>");
+		out.println("<div class = 'row'>");
+		out.println("<input type='submit' id='replace' name='replace' value='Replace' />");
+		out.println("<input type='text' id='message' name='message' />");
+		out.println("</div");
+		out.println("<div class = 'row'>");
+		out.println("<input type='submit' id='refresh' name='refresh' value='Refresh' />");
+		out.println("</div>");
+		out.println("<div class = 'row'>");
+		out.println("<input type='submit' id='logout' name='logout' value='Logout' />");
+		out.println("</div");
+		out.println("</div>");
+		out.println("<br/><br/>");
+		out.println("<div class = 'row'>");
+		out.println("<b>Cookie: </b>" + newCookie.toString());
+		out.println("<b>Expires: </b> " + newSession.getExpirationDate());
+		out.println("</div>");
+		out.println("</form>");
+		out.println("</body>");
+		out.println("<html>");
 	}
 }

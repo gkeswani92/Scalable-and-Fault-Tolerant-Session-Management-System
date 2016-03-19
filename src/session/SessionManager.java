@@ -19,6 +19,10 @@ public class SessionManager extends HttpServlet{
 		return sessionInformation.get(sessionID);
 	}
 	
+	public void terminateSession(String sessionID){
+		sessionInformation.remove(sessionID);
+	}
+	
 	public Integer getSessionTableSize(){
 		return sessionInformation.size();
 	}
