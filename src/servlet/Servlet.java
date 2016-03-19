@@ -35,6 +35,27 @@ public class Servlet extends HttpServlet {
 		Cookie[] cookies =  request.getCookies();
 		Cookie cookie = findCorrectCookie(cookies);
 
+		//Gets the session if it already exists, otherwise creates a new one
+		newSession = getSession(cookie);
+		
+		//Retrieving the newly created cookie and sending it back in the
+		//response
+		newCookie = newSession.getCustomCookie();
+		response.addCookie(newCookie);
+		
+		//Render the web page with the details
+		displayWebPage(response, newCookie, newSession);
+	}
+
+	/**
+	 * If the session id in the cookie already exists, get that session. Otherwise
+	 * create a new session and cookie and return this new session
+	 * @param cookie
+	 * @return
+	 */
+	private MySession getSession(Cookie cookie) {
+		MySession newSession;
+		
 		// Create a new session or refresh an existing one depending on whether
 		// a cookie was passed to us by the browser that was created by us
 		if(cookie == null){
@@ -44,12 +65,6 @@ public class Servlet extends HttpServlet {
 			newSession = new MySession();
 			sessionTable.addSession(newSession);
 			System.out.println("New session and cookie have been created");
-			System.out.println(sessionTable.getSessionTableSize());
-			
-			//Retrieving the newly created cookie and sending it back in the
-			//response
-			newCookie = newSession.getCustomCookie();
-			response.addCookie(newCookie);
 		} else {
 			System.out.println("Old cookie has been received. New one does not need to be created");
 			
@@ -58,11 +73,8 @@ public class Servlet extends HttpServlet {
 			String sessionID = cookie.getValue();
 			System.out.println(sessionTable.getSessionTableSize());
 			newSession = sessionTable.getSession(sessionID);
-			newCookie = newSession.getCustomCookie();
 		}
-		
-		//Render the web page with the details
-		displayWebPage(response, newCookie, newSession);
+		return newSession;
 	}
 
 	@Override
@@ -74,8 +86,9 @@ public class Servlet extends HttpServlet {
 		//request and one would have been created in the GET request
 		Cookie[] cookies =  request.getCookies();
 		Cookie cookie = findCorrectCookie(cookies);
-		String sessionID = cookie.getValue();
-		MySession session = sessionTable.getSession(sessionID);
+		
+		MySession session = getSession(cookie);
+		String sessionID = session.getSessionID();
 		MyCookie myCookie = session.getCustomCookie();
 		
 		if(request.getParameter("replace") != null){
