@@ -10,7 +10,7 @@ public class MySession {
 	
 	private String sessionID;
 	private String message;
-	private String versionNumber;
+	private int versionNumber;
 	private Date timeOfCreation;
 	private Date lastAccess;
 	private Date expirationDate;
@@ -21,8 +21,8 @@ public class MySession {
 		
 		// Setting information that also needs to be passed to the cookie
 		this.setSessionID(UUID.randomUUID().toString().replaceAll("[^\\d.]", ""));
-		this.setMessage("Hello, User!");
-		this.setVersionNumber("1");
+		this.message = "Hello, User!";
+		this.setVersionNumber(1);
 		
 		// Setting information that will be used to determine if a session has 
 		// expired
@@ -32,7 +32,7 @@ public class MySession {
 		cal.add(Calendar.SECOND, cookie_age);
 		this.setExpirationDate(cal.getTime());
 		
-		setCustomCookie(new MyCookie(this.sessionID, this.versionNumber, new LocationMetadata(), cookie_age));
+		this.customCookie = new MyCookie(this.sessionID, this.versionNumber, new LocationMetadata(), cookie_age);
 	}
 	
 	/**
@@ -45,6 +45,8 @@ public class MySession {
 		
 		cal.add(Calendar.SECOND, cookie_age);
 		this.setExpirationDate(cal.getTime());
+		
+		incrementVersionNumber();
 	}
 
 	public String getSessionID() {
@@ -61,14 +63,20 @@ public class MySession {
 
 	public void setMessage(String message) {
 		this.message = message;
+		incrementVersionNumber();
 	}
 
-	public String getVersionNumber() {
+	public Integer getVersionNumber() {
 		return versionNumber;
 	}
 
-	public void setVersionNumber(String versionNumber) {
+	public void setVersionNumber(Integer versionNumber) {
 		this.versionNumber = versionNumber;
+	}
+	
+	public void incrementVersionNumber(){
+		this.versionNumber++;
+		this.customCookie.setVersionNumber(this.versionNumber);
 	}
 
 	public Date getTimeOfCreation() {

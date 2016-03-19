@@ -7,7 +7,7 @@ public class MyCookie extends Cookie{
 	private static final long serialVersionUID = 1L;
 	private static String cookieName = "CS5300PROJ!SESSION";
 	private String sessionID;
-	private String versionNumber;
+	private Integer versionNumber;
 	private LocationMetadata locationData;
 	
 	/**
@@ -18,7 +18,7 @@ public class MyCookie extends Cookie{
 	 * @param locationData
 	 * @param expiration
 	 */
-	public MyCookie(String sessionID, String versionNumber, LocationMetadata locationData, Integer expiration) {
+	public MyCookie(String sessionID, Integer versionNumber, LocationMetadata locationData, Integer expiration) {
 		super(cookieName, sessionID);
 		this.sessionID = sessionID;
 		this.versionNumber = versionNumber;
@@ -44,8 +44,15 @@ public class MyCookie extends Cookie{
 	/**
 	 * @return the versionNumber
 	 */
-	public String getVersionNumber() {
+	public Integer getVersionNumber() {
 		return versionNumber;
+	}
+	
+	/**
+	 * @return the versionNumber
+	 */
+	public void setVersionNumber(Integer versionNumber) {
+		this.versionNumber = versionNumber;
 	}
 
 	/**

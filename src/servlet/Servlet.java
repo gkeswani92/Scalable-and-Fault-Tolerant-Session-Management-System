@@ -59,7 +59,6 @@ public class Servlet extends HttpServlet {
 		
 		MySession session = getSession(cookie);
 		String sessionID = session.getSessionID();
-		MyCookie myCookie = session.getCustomCookie();
 		
 		if(request.getParameter("replace") != null){
 			System.out.println("The replace button has been pressed");	
@@ -81,6 +80,8 @@ public class Servlet extends HttpServlet {
 		}
 		
 		//Render the web page with the updated details
+		MyCookie myCookie = session.getCustomCookie();
+		response.addCookie(myCookie);
 		displayWebPage(response, myCookie, session);
 	}
 	
