@@ -11,6 +11,10 @@ public class LocationMetadata implements Serializable{
 	private static final long serialVersionUID = 1L;
 	private List<String> wqaddress;
 	
+	public LocationMetadata(){
+		wqaddress = new ArrayList<String>();
+	}
+	
 	public LocationMetadata(List<String> wqaddress){
 		wqaddress = new ArrayList<String>();
 		this.wqaddress.addAll(wqaddress);
@@ -28,5 +32,13 @@ public class LocationMetadata implements Serializable{
 	 */
 	public void setWqaddress(List<String> wqaddress) {
 		this.wqaddress = wqaddress;
+	}
+	
+	public String toString(){
+		String output = "";
+		for(String s: this.wqaddress){
+			output += s;
+		}
+		return output;
 	}
 }

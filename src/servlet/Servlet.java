@@ -1,6 +1,7 @@
 package servlet;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -29,6 +30,7 @@ public class Servlet extends HttpServlet {
 		PrintWriter out = response.getWriter();
 		MySession newSession = null;
 		MyCookie newCookie = null;
+		Calendar cal = Calendar.getInstance();
 		
 		//Get all the cookie that was received in the request and find if any
 		//of them came from our server
@@ -56,6 +58,7 @@ public class Servlet extends HttpServlet {
 			//Retrieving details about the session using the session id stored in
 			//cookie
 			String sessionID = cookie.getValue();
+			System.out.println(sessionTable.getSessionTableSize());
 			newSession = sessionTable.getSession(sessionID);
 			newCookie = newSession.getCustomCookie();
 		}
@@ -67,7 +70,7 @@ public class Servlet extends HttpServlet {
 		out.println("<b>NetID:</b> gk368");
 		out.println("<b>Session:</b>" + newCookie.getSessionID());
 		out.println("<b>Version: </b>" + newCookie.getVersionNumber());
-		out.println("<b>Date:</b>");
+		out.println("<b>Date:</b>" + cal.getTime());
 		out.println("</div>");
 		out.println("<h1>" + newSession.getMessage() + "</h1>");
 		out.println("<form method='POST' action='/'>");
@@ -83,9 +86,10 @@ public class Servlet extends HttpServlet {
 		out.println("<input type='submit' name='btn-logout' value='Logout' />");
 		out.println("</div");
 		out.println("</div>");
+		out.println("<br/><br/>");
 		out.println("<div class = 'row'>");
-		out.println("<b>Cookie: " + newCookie.toString() + "</b>");
-		out.println("<b>Expires: " + newSession.getExpirationDate() + "</b>");
+		out.println("<b>Cookie: </b>" + newCookie.toString());
+		out.println("<b>Expires: </b> " + newSession.getExpirationDate());
 		out.println("</div>");
 		out.println("</form>");
 		out.println("</body>");
@@ -109,5 +113,11 @@ public class Servlet extends HttpServlet {
 			}
 		}
 		return null;
+	}
+	
+	@Override
+	public void doPost(HttpServletRequest request, HttpServletResponse response) 
+										throws ServletException, IOException {
+		
 	}
 }

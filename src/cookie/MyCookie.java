@@ -1,5 +1,4 @@
 package cookie;
-import java.util.Date;
 
 import javax.servlet.http.Cookie;
 

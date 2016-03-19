@@ -3,7 +3,7 @@ package session;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
-
+import cookie.LocationMetadata;
 import cookie.MyCookie;
 
 public class MySession {
@@ -32,7 +32,7 @@ public class MySession {
 		cal.add(Calendar.SECOND, cookie_age);
 		this.setExpirationDate(cal.getTime());
 		
-		setCustomCookie(new MyCookie(this.sessionID, this.versionNumber, null, cookie_age));
+		setCustomCookie(new MyCookie(this.sessionID, this.versionNumber, new LocationMetadata(), cookie_age));
 	}
 	
 	/**
