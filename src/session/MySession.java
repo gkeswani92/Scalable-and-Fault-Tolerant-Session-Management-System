@@ -15,7 +15,7 @@ public class MySession {
 	private Date lastAccess;
 	private Date expirationDate;
 	private MyCookie customCookie;
-	private final int cookie_age = 360;
+	private final int cookie_age = 30;
 	
 	public MySession(){
 		

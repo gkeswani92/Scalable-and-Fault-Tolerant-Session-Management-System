@@ -14,4 +14,12 @@ public class SessionManager extends HttpServlet{
 	public void addSession(MySession session){
 		sessionInformation.put(session.getSessionID(), session);
 	}
+	
+	public MySession getSession(String sessionID){
+		return sessionInformation.get(sessionID);
+	}
+	
+	public Integer getSessionTableSize(){
+		return sessionInformation.size();
+	}
 }
