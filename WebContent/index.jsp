@@ -17,7 +17,7 @@
 	
 		<h1> ${message} </h1>
 	
-		<form method="POST">
+		<form method="POST" action="/index">
 			<div class="container">
 				<div class = "row">
 					<input type="submit" name="replace" value="Replace" /> 
