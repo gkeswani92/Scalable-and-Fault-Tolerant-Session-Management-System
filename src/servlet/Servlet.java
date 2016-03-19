@@ -47,36 +47,6 @@ public class Servlet extends HttpServlet {
 		displayWebPage(response, newCookie, newSession);
 	}
 
-	/**
-	 * If the session id in the cookie already exists, get that session. Otherwise
-	 * create a new session and cookie and return this new session
-	 * @param cookie
-	 * @return
-	 */
-	private MySession getSession(Cookie cookie) {
-		MySession newSession;
-		
-		// Create a new session or refresh an existing one depending on whether
-		// a cookie was passed to us by the browser that was created by us
-		if(cookie == null){
-			System.out.println("New cookie and session needs to be created");
-			
-			//Created a new session and added it to the session table
-			newSession = new MySession();
-			sessionTable.addSession(newSession);
-			System.out.println("New session and cookie have been created");
-		} else {
-			System.out.println("Old cookie has been received. New one does not need to be created");
-			
-			//Retrieving details about the session using the session id stored in
-			//cookie
-			String sessionID = cookie.getValue();
-			System.out.println(sessionTable.getSessionTableSize());
-			newSession = sessionTable.getSession(sessionID);
-		}
-		return newSession;
-	}
-
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) 
 										throws ServletException, IOException {
@@ -94,8 +64,14 @@ public class Servlet extends HttpServlet {
 		if(request.getParameter("replace") != null){
 			System.out.println("The replace button has been pressed");	
 			String newState = request.getParameter("message");
-			System.out.println("The new state needs to be " + newState);
-			session.setMessage(newState);
+			
+			//Changing the state unless the replacement text was null
+			if(newState != null){
+				System.out.println("The new state needs to be " + newState);
+				session.setMessage(newState);
+			} else {
+				System.out.println("New state cannot be empty. Not changing it");
+			}
 		} else if(request.getParameter("refresh") != null){
 			System.out.println("The refresh button has been pressed");
 			session.refreshSession();
@@ -125,6 +101,37 @@ public class Servlet extends HttpServlet {
 			}
 		}
 		return null;
+	}
+	
+
+	/**
+	 * If the session id in the cookie already exists, get that session. Otherwise
+	 * create a new session and cookie and return this new session
+	 * @param cookie
+	 * @return
+	 */
+	private MySession getSession(Cookie cookie) {
+		MySession newSession;
+		
+		// Create a new session or refresh an existing one depending on whether
+		// a cookie was passed to us by the browser that was created by us
+		if(cookie == null){
+			System.out.println("New cookie and session needs to be created");
+			
+			//Created a new session and added it to the session table
+			newSession = new MySession();
+			sessionTable.addSession(newSession);
+			System.out.println("New session and cookie have been created");
+		} else {
+			System.out.println("Old cookie has been received. New one does not need to be created");
+			
+			//Retrieving details about the session using the session id stored in
+			//cookie
+			String sessionID = cookie.getValue();
+			System.out.println(sessionTable.getSessionTableSize());
+			newSession = sessionTable.getSession(sessionID);
+		}
+		return newSession;
 	}
 	
 	public void displayWebPage(HttpServletResponse response, MyCookie newCookie, 
