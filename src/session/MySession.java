@@ -60,6 +60,7 @@ public class MySession implements Serializable {
 
 	public void setMessage(String message) {
 		this.message = message;
+		refreshSession();
 	}
 
 	public Integer getVersionNumber() {
