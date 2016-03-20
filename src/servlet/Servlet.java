@@ -98,9 +98,11 @@ public class Servlet extends HttpServlet {
 	 * @return
 	 */
 	public Cookie findCorrectCookie(Cookie[] cookies){
-		for(Cookie c: cookies){
-			if(c.getName().equals("CS5300PROJ1SESSION")){
-				return c;
+		if(cookies != null){
+			for(Cookie c: cookies){
+				if(c.getName().equals("CS5300PROJ1SESSION")){
+					return c;
+				}
 			}
 		}
 		return null;
