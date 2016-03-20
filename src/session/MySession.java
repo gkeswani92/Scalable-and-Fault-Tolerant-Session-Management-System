@@ -1,21 +1,22 @@
 package session;
 
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 import cookie.LocationMetadata;
 import cookie.MyCookie;
 
-public class MySession {
+public class MySession implements Serializable {
 	
+	private static final long serialVersionUID = 1L;
 	private String sessionID;
 	private String message;
 	private int versionNumber;
 	private Date timeOfCreation;
-	private Date lastAccess;
 	private Date expirationDate;
 	private MyCookie customCookie;
-	private final int cookie_age = 30;
+	private final int AGE = 30;
 	
 	public MySession(){
 		
@@ -28,11 +29,10 @@ public class MySession {
 		// expired
 		Calendar cal = Calendar.getInstance();
 		this.setTimeOfCreation(cal.getTime());
-		this.setLastAccess(cal.getTime());
-		cal.add(Calendar.SECOND, cookie_age);
+		cal.add(Calendar.SECOND, AGE);
 		this.setExpirationDate(cal.getTime());
 		
-		this.customCookie = new MyCookie(this.sessionID, this.versionNumber, new LocationMetadata(), cookie_age);
+		this.customCookie = new MyCookie(this.sessionID, this.versionNumber, new LocationMetadata(), AGE);
 	}
 	
 	/**
@@ -40,13 +40,10 @@ public class MySession {
 	 * the expiration date by 360 seconds
 	 */
 	public void refreshSession(){
-		Calendar cal = Calendar.getInstance();
-		this.setLastAccess(cal.getTime());
-		
-		cal.add(Calendar.SECOND, cookie_age);
-		this.setExpirationDate(cal.getTime());
-		
-		this.customCookie.refreshCookie(cookie_age);
+		Calendar cal = Calendar.getInstance();		
+		cal.add(Calendar.SECOND, AGE);
+		this.setExpirationDate(cal.getTime());		
+		this.customCookie.refreshCookie(AGE);
 	}
 
 	public String getSessionID() {
@@ -84,14 +81,6 @@ public class MySession {
 
 	public void setTimeOfCreation(Date timeOfCreation) {
 		this.timeOfCreation = timeOfCreation;
-	}
-
-	public Date getLastAccess() {
-		return lastAccess;
-	}
-
-	public void setLastAccess(Date lastAccess) {
-		this.lastAccess = lastAccess;
 	}
 
 	public Date getExpirationDate() {

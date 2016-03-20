@@ -98,9 +98,9 @@ public class Servlet extends HttpServlet {
 	 * @return
 	 */
 	public Cookie findCorrectCookie(Cookie[] cookies){
-		for(int i=0; i<cookies.length;i++){
-			if(cookies[i].getName().equals("CS5300PROJ1SESSION")){
-				return cookies[i];
+		for(Cookie c: cookies){
+			if(c.getName().equals("CS5300PROJ1SESSION")){
+				return c;
 			}
 		}
 		return null;
@@ -135,7 +135,7 @@ public class Servlet extends HttpServlet {
 			newSession = sessionTable.getSession(sessionID);
 			
 			//If the cookie had a stale session that has been discarded, we 
-			//need to create a new one
+			//need to create a new session and a new cookie
 			if(newSession == null){
 				newSession = new MySession();
 				sessionTable.addSession(newSession);
