@@ -5,7 +5,7 @@ import javax.servlet.http.Cookie;
 public class MyCookie extends Cookie{
 	
 	private static final long serialVersionUID = 1L;
-	private static String cookieName = "CS5300PROJ!SESSION";
+	private static String cookieName = "CS5300PROJ1SESSION";
 	private String sessionID;
 	private Integer versionNumber;
 	private LocationMetadata locationData;
@@ -32,6 +32,10 @@ public class MyCookie extends Cookie{
 	 */
 	public String toString(){
 		return this.sessionID + "_" + this.versionNumber + "_" + this.locationData.toString();
+	}
+	
+	public void refreshCookie(Integer cookie_age){
+		this.setMaxAge(cookie_age);
 	}
 	
 	/**

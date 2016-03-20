@@ -1,4 +1,7 @@
 package session;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.HttpServlet;
 
@@ -19,11 +22,25 @@ public class SessionManager extends HttpServlet{
 		return sessionInformation.get(sessionID);
 	}
 	
-	public void terminateSession(String sessionID){
-		sessionInformation.remove(sessionID);
+	public void terminateSession(MySession session){
+		sessionInformation.remove(session.getSessionID());
 	}
 	
 	public Integer getSessionTableSize(){
 		return sessionInformation.size();
+	}
+	
+	/**
+	 * Cleaning up all sessions which have already expired
+	 */
+	public void cleanUpExpiredSessions(){
+		Iterator<Entry<String, MySession>> i = sessionInformation.entrySet().iterator();
+		while(i.hasNext()){
+			Entry<String, MySession> sessionEntry = i.next();
+			if(sessionEntry.getValue().getExpirationDate().before(new Date())){
+				System.out.println("Cleaned up an expired session");
+				i.remove();
+			}
+		}
 	}
 }

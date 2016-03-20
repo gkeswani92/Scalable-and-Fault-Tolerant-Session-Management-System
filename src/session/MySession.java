@@ -46,7 +46,7 @@ public class MySession {
 		cal.add(Calendar.SECOND, cookie_age);
 		this.setExpirationDate(cal.getTime());
 		
-		incrementVersionNumber();
+		this.customCookie.refreshCookie(cookie_age);
 	}
 
 	public String getSessionID() {
@@ -63,7 +63,6 @@ public class MySession {
 
 	public void setMessage(String message) {
 		this.message = message;
-		incrementVersionNumber();
 	}
 
 	public Integer getVersionNumber() {

@@ -27,6 +27,7 @@ public class Servlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) 
 										throws ServletException, IOException {
 		
+		sessionTable.cleanUpExpiredSessions();
 		MySession newSession = null;
 		MyCookie newCookie = null;
 		
@@ -38,8 +39,7 @@ public class Servlet extends HttpServlet {
 		//Gets the session if it already exists, otherwise creates a new one
 		newSession = getSession(cookie);
 		
-		//Retrieving the newly created cookie and sending it back in the
-		//response
+		//Retrieving the newly created cookie and sending it back in the response
 		newCookie = newSession.getCustomCookie();
 		response.addCookie(newCookie);
 		
@@ -51,6 +51,8 @@ public class Servlet extends HttpServlet {
 	public void doPost(HttpServletRequest request, HttpServletResponse response) 
 										throws ServletException, IOException {
 		
+		sessionTable.cleanUpExpiredSessions();
+		
 		//Get all the cookie that was received in the request and find the one 
 		//that was sent by our server. There has to be one since this is a POST
 		//request and one would have been created in the GET request
@@ -58,7 +60,6 @@ public class Servlet extends HttpServlet {
 		Cookie cookie = findCorrectCookie(cookies);
 		
 		MySession session = getSession(cookie);
-		String sessionID = session.getSessionID();
 		
 		if(request.getParameter("replace") != null){
 			System.out.println("The replace button has been pressed");	
@@ -72,14 +73,16 @@ public class Servlet extends HttpServlet {
 				System.out.println("New state cannot be empty. Not changing it");
 			}
 		} else if(request.getParameter("refresh") != null){
-			System.out.println("The refresh button has been pressed");
 			session.refreshSession();
 		} else {
-			System.out.println("The logout button has been pressed. Session being terminated");
-			sessionTable.terminateSession(sessionID);
+			sessionTable.terminateSession(session);
+			PrintWriter out = response.getWriter();
+			out.println("You have been logged out");
+			return;
 		}
 		
-		//Render the web page with the updated details
+		//Render the web page with the updated details and send back the 
+		//latest cookie to the client
 		MyCookie myCookie = session.getCustomCookie();
 		response.addCookie(myCookie);
 		displayWebPage(response, myCookie, session);
@@ -96,8 +99,7 @@ public class Servlet extends HttpServlet {
 	 */
 	public Cookie findCorrectCookie(Cookie[] cookies){
 		for(int i=0; i<cookies.length;i++){
-			System.out.println(cookies[i].getName());
-			if(cookies[i].getName().equals("CS5300PROJ!SESSION")){
+			if(cookies[i].getName().equals("CS5300PROJ1SESSION")){
 				return cookies[i];
 			}
 		}
@@ -131,6 +133,16 @@ public class Servlet extends HttpServlet {
 			String sessionID = cookie.getValue();
 			System.out.println(sessionTable.getSessionTableSize());
 			newSession = sessionTable.getSession(sessionID);
+			
+			//If the cookie had a stale session that has been discarded, we 
+			//need to create a new one
+			if(newSession == null){
+				newSession = new MySession();
+				sessionTable.addSession(newSession);
+				System.out.println("New session has been created since session id in the cookie was terminated");
+			} else {
+				newSession.incrementVersionNumber();
+			}
 		}
 		return newSession;
 	}
