@@ -35,6 +35,12 @@ public class Servlet extends HttpServlet {
 		//Gets the session if it already exists, otherwise creates a new one
 		newSession = getSession(cookie);
 		
+		if(newSession == null){
+			newSession = new MySession();
+			sessionTable.addSession(newSession);
+			System.out.println("New session has been created since session id in the cookie was terminated. Ignore post params");
+		}
+		
 		//Retrieving the newly created cookie and sending it back in the response
 		newCookie = newSession.getCustomCookie();
 		response.addCookie(newCookie);
@@ -57,24 +63,34 @@ public class Servlet extends HttpServlet {
 		
 		MySession session = getSession(cookie);
 		
-		if(request.getParameter("replace") != null){
-			System.out.println("The replace button has been pressed");	
-			String newState = request.getParameter("message");
-			
-			//Changing the state unless the replacement text was null
-			if(newState != null){
-				System.out.println("The new state needs to be " + newState);
-				session.setMessage(newState);
-			} else {
-				System.out.println("New state cannot be empty. Not changing it");
-			}
-		} else if(request.getParameter("refresh") != null){
-			session.refreshSession();
+		//If the cookie had a stale session that has been discarded, we 
+		//need to create a new session and a new cookie
+		if(session == null){
+			session = new MySession();
+			sessionTable.addSession(session);
+			System.out.println("New session has been created since session id in the cookie was terminated. Ignore post params");
 		} else {
-			sessionTable.terminateSession(session);
-			PrintWriter out = response.getWriter();
-			out.println("You have been logged out");
-			return;
+			session.incrementVersionNumber();
+		
+			if(request.getParameter("replace") != null){
+				System.out.println("The replace button has been pressed");	
+				String newState = request.getParameter("message");
+				
+				//Changing the state unless the replacement text was null
+				if(newState != null){
+					System.out.println("The new state needs to be " + newState);
+					session.setMessage(newState);
+				} else {
+					System.out.println("New state cannot be empty. Not changing it");
+				}
+			} else if(request.getParameter("refresh") != null){
+				session.refreshSession();
+			} else {
+				sessionTable.terminateSession(session);
+				PrintWriter out = response.getWriter();
+				out.println("You have been logged out");
+				return;
+			}
 		}
 		
 		//Render the web page with the updated details and send back the 
@@ -131,16 +147,6 @@ public class Servlet extends HttpServlet {
 			String sessionID = cookie.getValue();
 			System.out.println(sessionTable.getSessionTableSize());
 			newSession = sessionTable.getSession(sessionID);
-			
-			//If the cookie had a stale session that has been discarded, we 
-			//need to create a new session and a new cookie
-			if(newSession == null){
-				newSession = new MySession();
-				sessionTable.addSession(newSession);
-				System.out.println("New session has been created since session id in the cookie was terminated");
-			} else {
-				newSession.incrementVersionNumber();
-			}
 		}
 		return newSession;
 	}
