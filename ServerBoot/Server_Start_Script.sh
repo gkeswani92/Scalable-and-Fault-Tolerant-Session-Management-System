@@ -28,27 +28,26 @@ aws configure set aws_access_key_id AKIAISOAOQKZPNRSDTCA
 aws configure set aws_secret_access_key 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
 aws configure set default.region us-east-1
 aws sdb put-attributes --domain-name "Server_Table" --item-name $ami_value --attributes Name=$ip_value,Value=$public_value,Replace=true
-aws sdb get-attributes --domain-name "Server_Table" --item-name $ami_value
-
-#The condition to wait() has to come here, could not figure out the signal, wait scheme in aws
-#aws ec2 describe-bundle-tasks
-#aws ec2 wait instance-running
-
+num_servers=4
+servers_in_db=0
+while [ $servers_in_db -ne $num_servers ]
+do
+	echo "1_servers_in_db: $servers_in_db"
+	sleep 2
+	servers_in_db=$(aws sdb select --select-expression "select count(*) from Server_Table" --query 'Items[0].[Attributes[0].Value]' --output text --no-paginate)
+	echo "2_servers_in_db: $servers_in_db"
+done
+aws sdb select --select-expression "select * from Server_Table" --output text --no-paginate > servers.txt
 echo "DB - Finalized"
 service tomcat8 start
 echo "TOMCAT STARTED"
 
-
-
 #http://www.sdbexplorer.com/licence.html?download=6-0-DMG
-#http://ryaneschinger.com/blog/waiting-on-ec2-resources/
 
-#aws ec2 wait bundle-task-complete 
-
+#aws sdb select --select-expression "select count(*) from Server_Table" --query 'Items[0].[Attributes[0].Value]' --output text
 
 #aws sdb delete-attributes --domain-name "Server_Table" --item-name ami_value --attributes Name=ami_value,Value=ip_value
 
 #aws sdb get-attributes --domain-name "Server_Table" --item-name ami_value
 
 #aws sdb put-attributes --domain-name "Server_Table" --item-name $ami_value --attributes Name=$ip_value,Value=$public_value,Replace=true
-
