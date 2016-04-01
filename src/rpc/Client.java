@@ -11,12 +11,32 @@ import java.util.UUID;
 
 public class Client {
 	static int count = -1;
-	public final static int operationSESSIONREAD = 1;
-	public final static int operationSESSIONWRITE = 2;
-	public final static int portProj1bRPC = 5300;
-	public final static String DELIMITER = "_";
-	public final static int TIMEOUT = 300;
+	private final static int operationSESSIONREAD = 1;
+	private final static int operationSESSIONWRITE = 2;
+	private final static int portProj1bRPC = 5300;
+	private final static String DELIMITER = "_";
+	private final static int TIMEOUT = 300;
 	
+	public static int getOperationsessionread() {
+		return operationSESSIONREAD;
+	}
+
+	public static int getOperationsessionwrite() {
+		return operationSESSIONWRITE;
+	}
+
+	public static int getPortproj1brpc() {
+		return portProj1bRPC;
+	}
+
+	public static int getMaxPacketSize() {
+		return MAX_PACKET_SIZE;
+	}
+	
+	public static String getDelimiter() {
+		return DELIMITER;
+	}
+
 	// 512 bytes
 	public final static int MAX_PACKET_SIZE = 4096;
 	
