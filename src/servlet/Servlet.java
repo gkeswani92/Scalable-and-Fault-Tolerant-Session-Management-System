@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import cookie.MyCookie;
+import rpc.Client;
 import session.MySession;
 import session.SessionManager;
 
@@ -17,7 +18,12 @@ import session.SessionManager;
 public class Servlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	SessionManager sessionTable = new SessionManager();
+	private static SessionManager sessionTable = new SessionManager();
+	private static Client rpcClient;
+	
+	public Servlet(){
+		rpcClient = new Client();
+	}
 	
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -38,7 +44,8 @@ public class Servlet extends HttpServlet {
 		if(newSession == null){
 			newSession = new MySession();
 			sessionTable.addSession(newSession);
-			System.out.println("New session has been created since session id in the cookie was terminated. Ignore post params");
+			System.out.println("New session has been created since session id "
+					+ "in the cookie was terminated. Ignore post params");
 		}
 		
 		//Retrieving the newly created cookie and sending it back in the response
@@ -55,20 +62,21 @@ public class Servlet extends HttpServlet {
 		
 		sessionTable.cleanUpExpiredSessions();
 		
-		//Get all the cookie that was received in the request and find the one 
+		//Get all the cookies that were received in the request and find the one 
 		//that was sent by our server. There has to be one since this is a POST
-		//request and one would have been created in the GET request
+		//request and one would have been created in the GET request. We then
+		//find the corresponding session using the session id stored in the cookie
 		Cookie[] cookies =  request.getCookies();
 		Cookie cookie = findCorrectCookie(cookies);
-		
 		MySession session = getSession(cookie);
 		
-		//If the cookie had a stale session that has been discarded, we 
-		//need to create a new session and a new cookie
+		//If the cookie had a stale session that has been discarded, we need to
+		//create a new session and a new cookie
 		if(session == null){
 			session = new MySession();
 			sessionTable.addSession(session);
-			System.out.println("New session has been created since session id in the cookie was terminated. Ignore post params");
+			System.out.println("New session has been created since session id "
+					+ "in the cookie was terminated. Ignore post params");
 		} else {
 			session.incrementVersionNumber();
 		
@@ -92,6 +100,11 @@ public class Servlet extends HttpServlet {
 				return;
 			}
 		}
+		
+		//At this point, we have made the changes to the session that we needed
+		//make. We now need to use RPC to update the session on the other nodes
+		rpcClient.sessionWrite(session);
+		
 		
 		//Render the web page with the updated details and send back the 
 		//latest cookie to the client
