@@ -68,6 +68,7 @@ public class Client {
 					do {
 						recvPkt.setLength(inBuf.length);
 						rpcSocket.receive(recvPkt);
+						inBuf = recvPkt.getData();
 						if (inBuf != null) {
 							String response = Arrays.toString(inBuf);
 							responseParams = response.split(DELIMITER);
