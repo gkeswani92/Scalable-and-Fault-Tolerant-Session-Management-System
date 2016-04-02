@@ -1,0 +1,8 @@
+ITEMS   0
+ATTRIBUTES      IP      172.31.46.215
+ATTRIBUTES      DNS     ec2-52-38-34-64.us-west-2.compute.amazonaws.com
+ATTRIBUTES      REBOOT  0
+ITEMS   1
+ATTRIBUTES      IP      172.31.26.104
+ATTRIBUTES      DNS     ec2-52-33-224-51.us-west-2.compute.amazonaws.com
+ATTRIBUTES      REBOOT  0
