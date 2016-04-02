@@ -8,6 +8,9 @@ import java.net.SocketException;
 
 import org.apache.catalina.tribes.util.Arrays;
 
+import session.MySession;
+import session.SessionManager;
+
 public class Server implements Runnable {
 	
 	private final static int portProj1bRPC = 5300;
@@ -40,18 +43,21 @@ public class Server implements Runnable {
 			    int returnPort = recvPkt.getPort();
 			    
 			    String[] requestParams = Arrays.toString(recvPkt.getData()).split(Client.getDelimiter());
-			    // here inBuf contains the callID and operationCode
+			    
+			    //The inBuf contains the callID and operationCode
 			    int operationCode = Integer.parseInt(requestParams[1]); // get requested operationCode
 			    switch ( operationCode ) {
-			    	case Client.getOperationsessionread():
-			    		// SessionRead accepts call args and returns call results 
+			    	case 1:
+			    		//SessionRead accepts call args and returns call results 
+			    		//by finding the session corresponding to the sesison id
 			    		outBuf = sessionRead(recvPkt.getData(), recvPkt.getLength());
 			    		break;
-			    	case Client.getOperationsessionwrite():
-			    		
-			    		
+			    	case 2:
+			    		break;	
 			    }
-			    // here outBuf should contain the callID and results of the call
+			    
+			    //Here outBuf should contain the callID and results of the call
+			    //Sending the packet back to the address and port it had come from
 			    DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length,
 			    	returnAddr, returnPort);
 			    rpcSocket.send(sendPkt);
@@ -61,4 +67,37 @@ public class Server implements Runnable {
 		}
 	}
 
+	/**
+	 * Read the request params received by the server and return the session 
+	 * data corresponding to that request
+	 * @param data
+	 * @param len
+	 * @return
+	 */
+	public byte[] sessionRead(byte[] data, Integer len){
+		String input = data.toString();
+		String[] requestParams = input.split(Client.getDelimiter());
+		
+		//Extracting the params that tell us what data and version is being requested
+		if(requestParams.length != 4){
+			System.out.println("Invalid request params received");
+			return null;
+		}
+		
+		//Finding the local session information known corresponding to the
+		//requested session id
+		String sessionID = requestParams[2];
+		Integer versionNumber = Integer.parseInt(requestParams[3]);
+		MySession session = SessionManager.sessionInformation.get(sessionID);
+		
+		//NOTE: May not be a valid case but just in case the version numbers
+		//dont match. Should never happen!
+		if(session.getVersionNumber() != versionNumber){
+			System.out.println("Invalid version number received");
+			return null;
+		}
+		
+		byte[] outBuf = session.toString().getBytes();
+		return outBuf;
+	}
 }

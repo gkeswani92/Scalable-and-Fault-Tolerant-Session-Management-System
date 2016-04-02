@@ -45,6 +45,10 @@ public class MySession implements Serializable {
 		this.setExpirationDate(cal.getTime());		
 		this.customCookie.refreshCookie(AGE);
 	}
+	
+	public String toString(){
+		return this.sessionID + "_" + this.versionNumber + "_" + this.message + "_" + this.expirationDate;
+	}
 
 	public String getSessionID() {
 		return sessionID;
