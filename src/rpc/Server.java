@@ -34,7 +34,6 @@ public class Server implements Runnable {
 		while (isRunning) {
 			byte[] inBuf = new byte[Client.getMaxPacketSize()];
 			byte[] outBuf = new byte[Client.getMaxPacketSize()];
-
 		    DatagramPacket recvPkt = new DatagramPacket(inBuf, inBuf.length);
 		    
 		    try {
@@ -88,6 +87,42 @@ public class Server implements Runnable {
 		//requested session id
 		String sessionID = requestParams[2];
 		Integer versionNumber = Integer.parseInt(requestParams[3]);
+		MySession session = SessionManager.sessionInformation.get(sessionID);
+		
+		//NOTE: May not be a valid case but just in case the version numbers
+		//dont match. Should never happen!
+		if(session.getVersionNumber() != versionNumber){
+			System.out.println("Invalid version number received");
+			return null;
+		}
+		
+		byte[] outBuf = session.toString().getBytes();
+		return outBuf;
+	}
+	
+	/**
+	 * Read the request params received by the server and return the session 
+	 * data corresponding to that request
+	 * @param data
+	 * @param len
+	 * @return
+	 */
+	public byte[] sessionWrite(byte[] data, Integer len){
+		String input = data.toString();
+		String[] requestParams = input.split(Client.getDelimiter());
+		
+		//Extracting the params that tell us what data and version is being requested
+		if(requestParams.length != 6){
+			System.out.println("Invalid request params received");
+			return null;
+		}
+		
+		//Finding the local session information known corresponding to the
+		//requested session id
+		String sessionID = requestParams[2];
+		Integer versionNumber = Integer.parseInt(requestParams[3]);
+		String message = requestParams[4];
+		String expirationTime = requestParams[5];
 		MySession session = SessionManager.sessionInformation.get(sessionID);
 		
 		//NOTE: May not be a valid case but just in case the version numbers

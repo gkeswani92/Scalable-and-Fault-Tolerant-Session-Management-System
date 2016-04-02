@@ -1,11 +1,12 @@
 package session;
 
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.UUID;
-import cookie.LocationMetadata;
-import cookie.MyCookie;
 
 public class MySession implements Serializable {
 	
@@ -15,8 +16,7 @@ public class MySession implements Serializable {
 	private int versionNumber;
 	private Date timeOfCreation;
 	private Date expirationDate;
-	private MyCookie customCookie;
-	private final int AGE = 30;
+	public static final int AGE = 30;
 	
 	public MySession(){
 		
@@ -31,8 +31,28 @@ public class MySession implements Serializable {
 		this.setTimeOfCreation(cal.getTime());
 		cal.add(Calendar.SECOND, AGE);
 		this.setExpirationDate(cal.getTime());
+	}
+	
+	public MySession(String sessionID, Integer versionNumber, String message, String expirationTime){
 		
-		this.customCookie = new MyCookie(this.sessionID, this.versionNumber, new LocationMetadata(), AGE);
+		// Setting information that also needs to be passed to the cookie
+		this.setSessionID(sessionID);
+		this.message = message;
+		this.setVersionNumber(versionNumber);
+		
+		// Setting information that will be used to determine if a session has 
+		// expired
+		Calendar cal = Calendar.getInstance();
+		this.setTimeOfCreation(cal.getTime());
+		
+		//TODO: Need to set the expiration data by figuring out how to convert
+		//string to Calender date
+		SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
+		try {
+			cal.setTime(sdf.parse(expirationTime));
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -43,7 +63,6 @@ public class MySession implements Serializable {
 		Calendar cal = Calendar.getInstance();		
 		cal.add(Calendar.SECOND, AGE);
 		this.setExpirationDate(cal.getTime());		
-		this.customCookie.refreshCookie(AGE);
 	}
 	
 	public String toString(){
@@ -77,7 +96,6 @@ public class MySession implements Serializable {
 	
 	public void incrementVersionNumber(){
 		this.versionNumber++;
-		this.customCookie.setVersionNumber(this.versionNumber);
 	}
 
 	public Date getTimeOfCreation() {
@@ -94,13 +112,5 @@ public class MySession implements Serializable {
 
 	public void setExpirationDate(Date expirationDate) {
 		this.expirationDate = expirationDate;
-	}
-
-	public MyCookie getCustomCookie() {
-		return customCookie;
-	}
-
-	public void setCustomCookie(MyCookie customCookie) {
-		this.customCookie = customCookie;
 	}
 }

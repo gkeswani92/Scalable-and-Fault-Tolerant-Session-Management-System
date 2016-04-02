@@ -9,9 +9,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-
 import cluster.ClusterMembership;
-import cookie.MyCookie;
+import cookie.LocationMetadata;
 import session.MySession;
 
 public class Client {
@@ -28,7 +27,7 @@ public class Client {
 	private static final Double WQ = 0.25;
 	private static final Double W = 0.5;
 	
-	public static DatagramPacket sessionRead(MySession session) {
+	public static DatagramPacket sessionRead(MySession session, LocationMetadata locationData) {
 		
 		String sessionId = session.getSessionID(); 
 		int version = session.getVersionNumber(); 
@@ -49,8 +48,7 @@ public class Client {
 			
 			//Getting the addresses of the instances that have the required data
 			//and sending the request to all of them
-			MyCookie cookie = session.getCustomCookie();
-			List<String> ipAddress = cookie.getLocationData().getWqaddress();
+			List<String> ipAddress = locationData.getWqaddress();
 			for(String destIp: ipAddress){
 				DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length, InetAddress.getByName(destIp), portProj1bRPC);
 				rpcSocket.send(sendPkt);
@@ -66,6 +64,8 @@ public class Client {
 
 				try {
 					do {
+						//Receive datagram packet and check if the packet is for
+						//the current call id
 						recvPkt.setLength(inBuf.length);
 						rpcSocket.receive(recvPkt);
 						inBuf = recvPkt.getData();

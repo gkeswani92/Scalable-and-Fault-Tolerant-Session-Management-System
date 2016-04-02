@@ -8,7 +8,7 @@ public class ClusterMembership {
 	
 	private static Map<String,List<String>> membership;
 	
-	public List<String> getMemberIPAddress(){
+	public static List<String> getMemberIPAddress(){
 		List<String> ipAddr = new ArrayList<String>();
 		
 		for(String amiIndex: membership.keySet()){

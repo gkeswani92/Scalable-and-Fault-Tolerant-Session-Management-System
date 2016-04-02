@@ -49,7 +49,7 @@ public class Servlet extends HttpServlet {
 		}
 		
 		//Retrieving the newly created cookie and sending it back in the response
-		newCookie = newSession.getCustomCookie();
+		newCookie = new MyCookie(newSession.getSessionID(), newSession.getVersionNumber(), null, MySession.AGE);
 		response.addCookie(newCookie);
 		
 		//Render the web page with the details
@@ -105,10 +105,9 @@ public class Servlet extends HttpServlet {
 		//make. We now need to use RPC to update the session on the other nodes
 		rpcClient.sessionWrite(session);
 		
-		
 		//Render the web page with the updated details and send back the 
 		//latest cookie to the client
-		MyCookie myCookie = session.getCustomCookie();
+		MyCookie myCookie = new MyCookie(session.getSessionID(), session.getVersionNumber(), null, MySession.AGE);
 		response.addCookie(myCookie);
 		displayWebPage(response, myCookie, session);
 	}
