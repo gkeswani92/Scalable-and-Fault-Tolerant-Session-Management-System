@@ -21,13 +21,13 @@ public class Client {
 	private final static int portProj1bRPC = 5300;
 	private final static String DELIMITER = "_";
 	private final static int TIMEOUT = 300;
-	public final static int MAX_PACKET_SIZE = 4096;
+	public  final static int MAX_PACKET_SIZE = 4096;
 	
 	//Tunable parameters to maintain 1 resiliency
 	private static final Double WQ = 0.25;
 	private static final Double W = 0.5;
 	
-	public static DatagramPacket sessionRead(MySession session, LocationMetadata locationData) {
+	public DatagramPacket sessionRead(MySession session, LocationMetadata locationData) {
 		
 		String sessionId = session.getSessionID(); 
 		int version = session.getVersionNumber(); 
@@ -96,7 +96,7 @@ public class Client {
 		return null;
 	}
 	
-	public static boolean sessionWrite(MySession session) {
+	public boolean sessionWrite(MySession session) {
 		
 		String sessionId = session.getSessionID(); 
 		int version = session.getVersionNumber(); 
@@ -131,7 +131,7 @@ public class Client {
 			//successes or we run out of servers 
 			int responses = 0;
 			int successfulResponses = 0;
-			while(successfulResponses < (WQ * numServers) && responses < numServers){
+			while(successfulResponses < Math.ceil(WQ * numServers) && responses < numServers){
 				byte [] inBuf = new byte[MAX_PACKET_SIZE];
 				DatagramPacket recvPkt = new DatagramPacket(inBuf, inBuf.length);
 				String[] responseParams = null;

@@ -48,6 +48,13 @@ public class Servlet extends HttpServlet {
 					+ "in the cookie was terminated. Ignore post params");
 		}
 		
+		//At this point, we have made the changes to the session that we needed
+		//make. We now need to use RPC to update the session on the other nodes		
+		boolean consensus = false;
+		do{
+			consensus = rpcClient.sessionWrite(newSession);
+		} while( consensus);
+				
 		//Retrieving the newly created cookie and sending it back in the response
 		newCookie = new MyCookie(newSession.getSessionID(), newSession.getVersionNumber(), null, MySession.AGE);
 		response.addCookie(newCookie);
@@ -103,7 +110,10 @@ public class Servlet extends HttpServlet {
 		
 		//At this point, we have made the changes to the session that we needed
 		//make. We now need to use RPC to update the session on the other nodes
-		rpcClient.sessionWrite(session);
+		boolean consensus = false;
+		do{
+			consensus = rpcClient.sessionWrite(session);
+		} while( consensus);
 		
 		//Render the web page with the updated details and send back the 
 		//latest cookie to the client
