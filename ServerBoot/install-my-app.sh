@@ -1,4 +1,7 @@
 #!/bin/bash -ex
+S3_BUCKET=cs5300s16-bi49-tmm259-gk368
+NUM_INSTANCES=5
+NUM_ATRB_PER_INSTANCE=3
 echo "Updating"
 yum update -y
 echo "Updated"
@@ -8,6 +11,8 @@ aws configure set default.region us-east-1
 echo "AWS CONFIGURED"
 yum -y install tomcat8-webapps tomcat8-docs-webapp tomcat8-admin-webapps
 echo "TOMCAT INSTALLED"
+echo "COPYING WAR FILE (project1b.war), from S3_BUCKET into tomcat8 tomcat8-webapps!!"
+aws s3 cp s3://${S3_BUCKET}/project1b.war /var/lib/tomcat8/webapps/project1b.war
 echo "Getting IP Addr"
 wget http://169.254.169.254/latest/meta-data/local-ipv4
 ip_value=$(<local-ipv4)
@@ -30,8 +35,8 @@ aws configure set default.region us-east-1
 aws sdb put-attributes --domain-name "Server_Table" --item-name $ami_value --attributes Name="IP",Value=$ip_value,Replace=true
 aws sdb put-attributes --domain-name "Server_Table" --item-name $ami_value --attributes Name="DNS",Value=$public_value,Replace=true
 aws sdb put-attributes --domain-name "Server_Table" --item-name $ami_value --attributes Name="REBOOT",Value="0",Replace=true
-#Set this number to be 3*number of servers, dont forget to apply the following on db
-attr_expected=12
+#attr_expectd = number of instances X attributes per key
+attr_expected=$(($NUM_ATRB_PER_INSTANCE*$NUM_INSTANCES))
 attr_in_db=0
 while [ $attr_in_db -ne $attr_expected ]
 do
