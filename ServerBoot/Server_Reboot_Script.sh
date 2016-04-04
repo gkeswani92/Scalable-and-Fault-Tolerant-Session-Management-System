@@ -15,7 +15,7 @@ reboot_count=$(aws sdb get-attributes --domain-name "Server_Table" --item-name $
 aws sdb put-attributes --domain-name "Server_Table" --item-name $ami_value --attributes Name="REBOOT",Value=$reboot_count,Replace=true
 sleep 2
 meta_data=$(aws sdb select --select-expression "select * from Server_Table" --output text --no-paginate)
-echo $meta_data > server.txt
+echo $meta_data > servers.txt
 echo "DB - Finalized"
 service tomcat8 start
 echo "TOMCAT STARTED"
