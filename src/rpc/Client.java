@@ -24,12 +24,12 @@ public class Client {
 	public  final static int MAX_PACKET_SIZE = 4096;
 	
 	//Tunable parameters to maintain 1 resiliency
-	private static final Double WQ = 0.25;
-	private static final Double W = 0.5;
+	private static final Double WQ = 0.5;
+	private static final Double W = 0.75;
 	
 	public DatagramPacket sessionRead(MySession session, LocationMetadata locationData) {
 		
-		System.out.println("Reading session data on client");
+		System.out.println("RPC Client: Reading session data");
 		String sessionId = session.getSessionID(); 
 		int version = session.getVersionNumber(); 
 		
@@ -46,7 +46,7 @@ public class Client {
 			String obuf = callID + DELIMITER + operationSESSIONREAD + DELIMITER 
 					+  sessionId + DELIMITER + version;
 			byte[] outBuf = obuf.getBytes();
-			System.out.println("Generated the data that is to be sent");
+			System.out.println("RPC Client: Generated the data that is to be sent");
 			
 			//Getting the addresses of the instances that have the required data
 			//and sending the request to all of them
@@ -55,7 +55,7 @@ public class Client {
 				DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length, InetAddress.getByName(destIp), portProj1bRPC);
 				rpcSocket.send(sendPkt);
 			}
-			System.out.println("Sent packet to the other instances");
+			System.out.println("RPC Client: Sent packet to the other instances");
 			
 			//Waiting for the first successful response and exiting
 			int responses = 0;
@@ -90,7 +90,7 @@ public class Client {
 
 				// If we reach this point, it means the call id in the response
 				// params matches the call id we sent out
-				System.out.println("Received a packet from one of the instance");
+				System.out.println("RPC Client: Received a packet from one of the instance");
 				rpcSocket.close();
 				return recvPkt;
 			}
@@ -101,6 +101,7 @@ public class Client {
 	}
 	
 	public boolean sessionWrite(MySession session) {
+		
 		
 		String sessionId = session.getSessionID(); 
 		int version = session.getVersionNumber(); 
@@ -118,25 +119,25 @@ public class Client {
 					+  sessionId + DELIMITER + version + DELIMITER + data 
 					+ DELIMITER + discardTime;
 			byte[] outBuf = obuf.getBytes();
-			System.out.println("RPC Client sending "+obuf);
+			System.out.println("RPC Client: Sending "+obuf);
 			
 			//Send the packet out to all the members and wait for WQ successful 
 			//responses 
 			//TODO: Choose numServers * W nodes at random to send out the write
 			//request. Currently sending it to all nodes
-			System.out.println("RPC Client sending write request to other instances");
+			System.out.println("RPC Client: Sending write request to other instances");
 			List<String> destinationIPAddresses = ClusterMembership.getMemberIPAddress();
 			int numServers = destinationIPAddresses.size();
 			for(String destIp: destinationIPAddresses){
 				DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length, 
 						InetAddress.getByName(destIp), portProj1bRPC);
 				rpcSocket.send(sendPkt);
-				System.out.println("RPC Client sending to "+destIp);
+				System.out.println("RPC Client: sending to "+destIp);
 			}
 			
 			//Continue probing for successful responses until we get enought
 			//successes or we run out of servers 
-			System.out.println("RPC Client waiting for responses from WQ instances");
+			System.out.println("RPC Client: waiting for responses from WQ instances");
 			int responses = 0;
 			int successfulResponses = 0;
 			while(successfulResponses < Math.ceil(WQ * numServers) && responses < numServers){
@@ -151,10 +152,13 @@ public class Client {
 						recvPkt.setLength(inBuf.length);
 						rpcSocket.receive(recvPkt);
 						if (inBuf != null) {
-							String response = Arrays.toString(inBuf);
+							String response = new String(inBuf).trim();
+							System.out.println("RPC Client: Received a response: "+response);
 							responseParams = response.split(DELIMITER); 
 						}
 					} while(responseParams == null || !responseParams[0].equals(callID));
+					successfulResponses++;
+					System.out.println("RPC Client: Received a successful response. Count = "+successfulResponses);
 				} 
 				catch(SocketTimeoutException stoe) {
 					stoe.printStackTrace();
@@ -168,10 +172,9 @@ public class Client {
 				  }
 				
 				//We get to this point only if a response was successful
-				successfulResponses++;
 				responses++;
 			}
-			System.out.println("Consensus has been received");
+			System.out.println("RPC Client: Consensus has been received");
 			rpcSocket.close();
 			return true;
 		} catch(Exception e) {

@@ -31,6 +31,7 @@ public class Server implements Runnable {
 	
 	@Override
 	public void run() {
+		System.out.println("RPC Server: Running");
 		while (isRunning) {
 			byte[] inBuf = new byte[Client.getMaxPacketSize()];
 			byte[] outBuf = new byte[Client.getMaxPacketSize()];
@@ -41,27 +42,36 @@ public class Server implements Runnable {
 			    InetAddress returnAddr = recvPkt.getAddress();
 			    int returnPort = recvPkt.getPort();
 			    
-			    String[] requestParams = Arrays.toString(recvPkt.getData()).split(Client.getDelimiter());
+			    String input = new String(recvPkt.getData()).trim();
+			    String[] requestParams = input.split(Client.getDelimiter());
+			    System.out.println("RPC Server: Received packet: " + input);
+			    System.out.println("RPC Server: Received params: " + requestParams);
 			    
 			    //The inBuf contains the callID and operationCode
-			    int operationCode = Integer.parseInt(requestParams[1]); // get requested operationCode
-			    switch ( operationCode ) {
-			    	case 1:
-			    		//SessionRead accepts call args and returns call results 
-			    		//by finding the session corresponding to the sesison id
-			    		outBuf = sessionRead(recvPkt.getData(), recvPkt.getLength());
-			    		break;
-			    	case 2:
-			    		outBuf = sessionWrite(recvPkt.getData(), recvPkt.getLength());
-			    		break;
+			    if(requestParams.length > 1){
+				    int operationCode = Integer.parseInt(requestParams[1]); // get requested operationCode
+				    switch ( operationCode ) {
+				    	case 1:
+				    		System.out.println("RPC Server: Received read request");
+				    		//SessionRead accepts call args and returns call results 
+				    		//by finding the session corresponding to the sesison id
+				    		outBuf = sessionRead(requestParams);
+				    		break;
+				    	case 2:
+				    		System.out.println("RPC Server: Received write request");
+				    		outBuf = sessionWrite(requestParams);
+				    		break;
+				    }
+				    
+				    //Here outBuf should contain the callID and results of the call
+				    //Sending the packet back to the address and port it had come from
+				    DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length,
+				    	returnAddr, returnPort);
+				    rpcSocket.send(sendPkt);
+				    System.out.println("Send packet back to the client");
+			    } else {
+			    	System.out.println("RPC Server: Invalid request params");
 			    }
-			    
-			    //Here outBuf should contain the callID and results of the call
-			    //Sending the packet back to the address and port it had come from
-			    DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length,
-			    	returnAddr, returnPort);
-			    rpcSocket.send(sendPkt);
-			    System.out.println("Send packet back to the client");
 		    } catch(IOException e) {
 		    	e.printStackTrace();
 		    }
@@ -75,9 +85,7 @@ public class Server implements Runnable {
 	 * @param len
 	 * @return
 	 */
-	public byte[] sessionRead(byte[] data, Integer len){
-		String input = data.toString();
-		String[] requestParams = input.split(Client.getDelimiter());
+	public byte[] sessionRead(String[] requestParams){
 		
 		//Extracting the params that tell us what data and version is being requested
 		if(requestParams.length != 4){
@@ -109,9 +117,7 @@ public class Server implements Runnable {
 	 * @param len
 	 * @return
 	 */
-	public byte[] sessionWrite(byte[] data, Integer len){
-		String input = data.toString();
-		String[] requestParams = input.split(Client.getDelimiter());
+	public byte[] sessionWrite(String[] requestParams){
 		
 		//Extracting the params that tell us what data and version is being requested
 		if(requestParams.length != 6){

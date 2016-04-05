@@ -48,20 +48,26 @@ public class ClusterMembership {
 			try {
 				while ( (myLine = bufRead.readLine()) != null)
 				{    
+
+					if (myLine.isEmpty()) break;
 					//System.out.println(line_count + ": " + myLine);
 					//KEY: AMI_INDEX, Unique Identifier for server 
 					if (line_count % num_attributes == 0){
-						AMI_INDEX = myLine.substring(8);
+						AMI_INDEX = myLine.substring(6);
 						
 					}
-					//AttributePair_1, IP --> IP_ADDR, AttributePair_2, DNS --> DNS_ADDR
-					else if ((line_count % num_attributes) < 3){
-						meta_data.add(myLine.substring(24));
+					//AttributePair_1, IP --> IP_ADDR
+					else if ((line_count % num_attributes) == 1){
+						meta_data.add(myLine.substring(14));
+					}
+					//AttributePair_2, DNS --> DNS_ADDR
+					else if ((line_count % num_attributes) == 2){
+						meta_data.add(myLine.substring(15));
 					}
 					
 					//AttributePair_3, REBOOT --> REBOOT_COUNT
 					else if (line_count % num_attributes == 3){
-						meta_data.add(myLine.substring(24));
+						meta_data.add(myLine.substring(18));
 						map.put(Integer.parseInt(AMI_INDEX), meta_data);
 						meta_data = new ArrayList<String>();
 					}

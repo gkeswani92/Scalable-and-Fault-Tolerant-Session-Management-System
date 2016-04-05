@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import cookie.LocationMetadata;
 import cookie.MyCookie;
 import rpc.Client;
+import rpc.Server;
 import session.MySession;
 import session.SessionManager;
 
@@ -22,9 +23,12 @@ public class Servlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static SessionManager sessionTable = new SessionManager();
 	private static Client rpcClient;
+	private static Server rpcServer;
 	
 	public Servlet(){
 		rpcClient = new Client();
+		rpcServer = new Server();
+		new Thread(rpcServer).start();
 	}
 	
 	@Override
@@ -52,10 +56,10 @@ public class Servlet extends HttpServlet {
 		
 		//At this point, we have made the changes to the session that we needed
 		//make. We now need to use RPC to update the session on the other nodes		
-		boolean consensus = false;
+		boolean consensus = true;
 		do{
 			consensus = rpcClient.sessionWrite(newSession);
-		} while( consensus);
+		} while( consensus == false );
 		System.out.println("Consensus has been received");
 				
 		//Retrieving the newly created cookie and sending it back in the response
