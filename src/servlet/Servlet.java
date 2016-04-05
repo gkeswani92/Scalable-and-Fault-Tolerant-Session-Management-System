@@ -120,7 +120,7 @@ public class Servlet extends HttpServlet {
 		boolean consensus = false;
 		do{
 			consensus = rpcClient.sessionWrite(session);
-		} while( consensus);
+		} while( consensus == false );
 		
 		//Render the web page with the updated details and send back the 
 		//latest cookie to the client
