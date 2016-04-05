@@ -16,7 +16,7 @@ public class MySession implements Serializable {
 	private int versionNumber;
 	private Date timeOfCreation;
 	private Date expirationDate;
-	public static final int AGE = 30;
+	public static final int AGE = 120;
 	
 	public MySession(){
 		

@@ -29,6 +29,7 @@ public class Client {
 	
 	public DatagramPacket sessionRead(MySession session, LocationMetadata locationData) {
 		
+		System.out.println("Reading session data on client");
 		String sessionId = session.getSessionID(); 
 		int version = session.getVersionNumber(); 
 		
@@ -45,6 +46,7 @@ public class Client {
 			String obuf = callID + DELIMITER + operationSESSIONREAD + DELIMITER 
 					+  sessionId + DELIMITER + version;
 			byte[] outBuf = obuf.getBytes();
+			System.out.println("Generated the data that is to be sent");
 			
 			//Getting the addresses of the instances that have the required data
 			//and sending the request to all of them
@@ -53,6 +55,7 @@ public class Client {
 				DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length, InetAddress.getByName(destIp), portProj1bRPC);
 				rpcSocket.send(sendPkt);
 			}
+			System.out.println("Sent packet to the other instances");
 			
 			//Waiting for the first successful response and exiting
 			int responses = 0;
@@ -87,6 +90,7 @@ public class Client {
 
 				// If we reach this point, it means the call id in the response
 				// params matches the call id we sent out
+				System.out.println("Received a packet from one of the instance");
 				rpcSocket.close();
 				return recvPkt;
 			}
@@ -114,21 +118,25 @@ public class Client {
 					+  sessionId + DELIMITER + version + DELIMITER + data 
 					+ DELIMITER + discardTime;
 			byte[] outBuf = obuf.getBytes();
+			System.out.println("RPC Client sending "+obuf);
 			
 			//Send the packet out to all the members and wait for WQ successful 
 			//responses 
 			//TODO: Choose numServers * W nodes at random to send out the write
 			//request. Currently sending it to all nodes
+			System.out.println("RPC Client sending write request to other instances");
 			List<String> destinationIPAddresses = ClusterMembership.getMemberIPAddress();
 			int numServers = destinationIPAddresses.size();
 			for(String destIp: destinationIPAddresses){
 				DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length, 
 						InetAddress.getByName(destIp), portProj1bRPC);
 				rpcSocket.send(sendPkt);
+				System.out.println("RPC Client sending to "+destIp);
 			}
 			
 			//Continue probing for successful responses until we get enought
 			//successes or we run out of servers 
+			System.out.println("RPC Client waiting for responses from WQ instances");
 			int responses = 0;
 			int successfulResponses = 0;
 			while(successfulResponses < Math.ceil(WQ * numServers) && responses < numServers){
@@ -163,6 +171,7 @@ public class Client {
 				successfulResponses++;
 				responses++;
 			}
+			System.out.println("Consensus has been received");
 			rpcSocket.close();
 			return true;
 		} catch(Exception e) {

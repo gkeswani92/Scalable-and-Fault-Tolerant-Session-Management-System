@@ -12,7 +12,7 @@ echo "AWS CONFIGURED"
 yum -y install tomcat8-webapps tomcat8-docs-webapp tomcat8-admin-webapps
 echo "TOMCAT INSTALLED"
 echo "COPYING WAR FILE (project1b.war), from S3_BUCKET into tomcat8 tomcat8-webapps!!"
-aws s3 cp s3://${S3_BUCKET}/project1b.war /var/lib/tomcat8/webapps/project1b.war
+aws s3 cp s3://${S3_BUCKET}/Session_Management.war /var/lib/tomcat8/webapps/Session_Management.war
 echo "Getting IP Addr"
 wget http://169.254.169.254/latest/meta-data/local-ipv4
 ip_value=$(<local-ipv4)

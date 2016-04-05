@@ -52,7 +52,8 @@ public class Server implements Runnable {
 			    		outBuf = sessionRead(recvPkt.getData(), recvPkt.getLength());
 			    		break;
 			    	case 2:
-			    		break;	
+			    		outBuf = sessionWrite(recvPkt.getData(), recvPkt.getLength());
+			    		break;
 			    }
 			    
 			    //Here outBuf should contain the callID and results of the call
@@ -60,6 +61,7 @@ public class Server implements Runnable {
 			    DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length,
 			    	returnAddr, returnPort);
 			    rpcSocket.send(sendPkt);
+			    System.out.println("Send packet back to the client");
 		    } catch(IOException e) {
 		    	e.printStackTrace();
 		    }
@@ -119,11 +121,17 @@ public class Server implements Runnable {
 		
 		//Finding the local session information known corresponding to the
 		//requested session id
+		String callID = requestParams[0];
 		String sessionID = requestParams[2];
 		Integer versionNumber = Integer.parseInt(requestParams[3]);
 		String message = requestParams[4];
 		String expirationTime = requestParams[5];
 		MySession session = SessionManager.sessionInformation.get(sessionID);
+		
+		if(session == null){
+			System.out.println("Session information was not found. Creating new session");
+			session = new MySession(sessionID, versionNumber, message, expirationTime);
+		}
 		
 		//NOTE: May not be a valid case but just in case the version numbers
 		//dont match. Should never happen!
@@ -132,7 +140,7 @@ public class Server implements Runnable {
 			return null;
 		}
 		
-		byte[] outBuf = session.toString().getBytes();
+		byte[] outBuf = (callID + '_' + session).toString().getBytes();
 		return outBuf;
 	}
 }

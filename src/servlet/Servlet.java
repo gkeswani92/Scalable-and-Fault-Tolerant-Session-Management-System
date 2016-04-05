@@ -9,6 +9,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import cookie.LocationMetadata;
 import cookie.MyCookie;
 import rpc.Client;
 import session.MySession;
@@ -54,9 +56,10 @@ public class Servlet extends HttpServlet {
 		do{
 			consensus = rpcClient.sessionWrite(newSession);
 		} while( consensus);
+		System.out.println("Consensus has been received");
 				
 		//Retrieving the newly created cookie and sending it back in the response
-		newCookie = new MyCookie(newSession.getSessionID(), newSession.getVersionNumber(), null, MySession.AGE);
+		newCookie = new MyCookie(newSession.getSessionID(), newSession.getVersionNumber(), new LocationMetadata(), MySession.AGE);
 		response.addCookie(newCookie);
 		
 		//Render the web page with the details
@@ -117,7 +120,7 @@ public class Servlet extends HttpServlet {
 		
 		//Render the web page with the updated details and send back the 
 		//latest cookie to the client
-		MyCookie myCookie = new MyCookie(session.getSessionID(), session.getVersionNumber(), null, MySession.AGE);
+		MyCookie myCookie = new MyCookie(session.getSessionID(), session.getVersionNumber(), new LocationMetadata(), MySession.AGE);
 		response.addCookie(myCookie);
 		displayWebPage(response, myCookie, session);
 	}

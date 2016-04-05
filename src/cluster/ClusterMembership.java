@@ -12,7 +12,7 @@ import java.util.Map;
 public class ClusterMembership {
 	
 	private static Map<Integer,List<String>> membership;
-	public static String FILEPATH_NAME = "servers.txt";
+	public static String FILEPATH_NAME = "/servers.txt";
 	
 	public static List<String> getMemberIPAddress(){
 		membership = getMemberIPAddress(FILEPATH_NAME);
@@ -35,8 +35,8 @@ public class ClusterMembership {
 			try {
 				input = new FileReader(file);
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				System.out.println("Could not Read File");
+				e.printStackTrace();
+				System.out.println("Could not read file as it was not found");
 			}
 			BufferedReader bufRead = new BufferedReader(input);
 			String myLine = null;
