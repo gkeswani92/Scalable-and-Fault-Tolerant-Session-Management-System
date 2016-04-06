@@ -34,6 +34,7 @@ public class ClusterMembership {
 	 * @return
 	 */
 	public static List<String> getMemberIPAddress(){
+		collectClusterData();
 		List<String> ipAddr = new ArrayList<String>();
 		for(Integer amiIndex: membership.keySet()){
 			String currentIP = membership.get(amiIndex).get(0);
