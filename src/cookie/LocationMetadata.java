@@ -20,6 +20,14 @@ public class LocationMetadata implements Serializable{
 		this.wqaddress.addAll(wqaddress);
 	}
 	
+	public LocationMetadata(String locationData){
+		this.wqaddress = new ArrayList<String>();
+		String[] locations = locationData.split(":");
+		for(String location: locations){
+			this.wqaddress.add(location);
+		}
+	}
+	
 	/**
 	 * @return the wqaddress
 	 */
