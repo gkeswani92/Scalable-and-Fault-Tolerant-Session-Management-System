@@ -16,7 +16,7 @@ public class LocationMetadata implements Serializable{
 	}
 	
 	public LocationMetadata(List<String> wqaddress){
-		wqaddress = new ArrayList<String>();
+		this.wqaddress = new ArrayList<String>();
 		this.wqaddress.addAll(wqaddress);
 	}
 	

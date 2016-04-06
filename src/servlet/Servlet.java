@@ -11,7 +11,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import cookie.LocationMetadata;
 import cookie.MyCookie;
 import rpc.Client;
@@ -62,6 +61,7 @@ public class Servlet extends HttpServlet {
 		newCookie = new MyCookie(newSession.getSessionID(), newSession.getVersionNumber(), 
 				new LocationMetadata(wqaddress), MySession.AGE);
 		response.addCookie(newCookie);
+		System.out.println("Servlet: Added the new cookie in the response");
 		
 		//Render the web page with the details
 		displayWebPage(response, newCookie, newSession);

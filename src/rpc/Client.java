@@ -190,11 +190,15 @@ public class Client {
 							responseParams = response.split(DELIMITER); 
 						}
 					} while(responseParams == null || !responseParams[0].equals(callID));
-					successfulResponses++;
-					String ip = recvPkt.getAddress().toString();
+					
+					String ip = recvPkt.getAddress().toString().substring(1);
 					Integer ami = ClusterMembership.getAMIFromIP(ip);
-					wqAddress.add(ami.toString());
-					System.out.println("RPC Client: Received a successful response from IP: " + ip + " and AMI: " + ami +". Count = "+successfulResponses);
+					if(ami != null){
+						wqAddress.add(ami.toString());
+						successfulResponses++;
+						System.out.println("RPC Client: Received a successful response "
+								+ "from IP: " + ip + " and AMI: " + ami +". Count = "+successfulResponses);
+					}
 				} 
 				catch(SocketTimeoutException stoe) {
 					stoe.printStackTrace();

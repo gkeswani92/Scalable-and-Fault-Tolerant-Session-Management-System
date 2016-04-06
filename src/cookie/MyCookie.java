@@ -23,8 +23,6 @@ public class MyCookie extends Cookie{
 		this.sessionID = sessionID;
 		this.versionNumber = versionNumber;
 		this.locationData = locationData;
-		super.setDomain(".amazonaws.com");
-		super.setPath("/");
 		this.setMaxAge(expiration);
 	}
 	
