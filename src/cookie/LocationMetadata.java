@@ -35,10 +35,10 @@ public class LocationMetadata implements Serializable{
 	}
 	
 	public String toString(){
-		String output = "";
+		StringBuilder wqList = new StringBuilder();
 		for(String s: this.wqaddress){
-			output += s;
-		}
-		return output;
+			wqList.append(s + ":");
+	    }
+	    return new String(wqList.deleteCharAt(wqList.length() - 1));
 	}
 }
