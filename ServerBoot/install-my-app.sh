@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 S3_BUCKET=cs5300s16-bi49-tmm259-gk368
-NUM_INSTANCES=4
+NUM_INSTANCES=3
 NUM_ATRB_PER_INSTANCE=3
 echo "Updating"
 yum update -y

@@ -12,18 +12,43 @@ import java.util.Map;
 public class ClusterMembership {
 	
 	private static Map<Integer,List<String>> membership;
+	private static Map<String,Integer> ipToAMI;
 	public static String FILEPATH_NAME = "/servers.txt";
 	
-	public static List<String> getMemberIPAddress(){
+	public static void collectClusterData(){
 		membership = getMemberIPAddress(FILEPATH_NAME);
+		ipToAMI = getIPToAMIMapping(membership);
+	}
+	
+	public static Map<String,Integer> getIPToAMIMapping(Map<Integer,List<String>> membership){
+		ipToAMI = new HashMap<String, Integer>();
+		for(Integer amiIndex: membership.keySet()){
+			String currentIP = membership.get(amiIndex).get(0);
+			ipToAMI.put(currentIP, amiIndex);
+		}
+		return ipToAMI;
+	}
+	
+	/**
+	 * Gets the ip addresses of the instances on record
+	 * @return
+	 */
+	public static List<String> getMemberIPAddress(){
 		List<String> ipAddr = new ArrayList<String>();
-		
 		for(Integer amiIndex: membership.keySet()){
 			String currentIP = membership.get(amiIndex).get(0);
 			ipAddr.add(currentIP);
 		}
 		
 		return ipAddr;
+	}
+	
+	/**
+	 * Gets the ami index of the ip addresses
+	 * @return
+	 */
+	public static Integer getAMIFromIP(String ipAddress){
+		return ipToAMI.get(ipAddress);
 	}
 	
 	//given a file correct file path parses the contents with respect to 3 attributes
@@ -78,14 +103,5 @@ public class ClusterMembership {
 				System.out.println("Error in Reading Line");
 			}
 			return map;
-		}
-		public static void HashMap<String, Integer> getAMIfromIP(HashMap <Integer, List<String>> map){
-
-				HashMap<String, Integer> IP_to_AMI = new HashMap<String, Integer>();
-
-				for (HashMap.Entry<Integer, List<String>> entry : map.entrySet()) 
-					IP_to_AMI.put(entry.getValue()[0],Integer.parseInt(entry.getKey()[0]));
-    			
-    			return IP_to_AMI;
 		}
 }

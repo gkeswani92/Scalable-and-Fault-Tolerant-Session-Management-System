@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -60,6 +61,7 @@ public class Client {
 			//Waiting for the first successful response and exiting
 			int responses = 0;
 			int numServers = ipAddress.size();
+			
 			while (responses <= numServers) {
 				byte[] inBuf = new byte[MAX_PACKET_SIZE];
 				DatagramPacket recvPkt = new DatagramPacket(inBuf, inBuf.length);
@@ -138,6 +140,7 @@ public class Client {
 			//Continue probing for successful responses until we get enought
 			//successes or we run out of servers 
 			System.out.println("RPC Client: waiting for responses from WQ instances");
+			List<Integer> wqAddress = new ArrayList<Integer>();
 			int responses = 0;
 			int successfulResponses = 0;
 			while(successfulResponses < Math.ceil(WQ * numServers) && responses < numServers){
@@ -158,7 +161,9 @@ public class Client {
 						}
 					} while(responseParams == null || !responseParams[0].equals(callID));
 					successfulResponses++;
-					System.out.println("RPC Client: Received a successful response. Count = "+successfulResponses);
+					String ip = recvPkt.getAddress().toString();
+					System.out.println("RPC Client: Received a successful response from " + ip + ". Count = "+successfulResponses);
+					wqAddress.add(ClusterMembership.getAMIFromIP(ip));
 				} 
 				catch(SocketTimeoutException stoe) {
 					stoe.printStackTrace();
