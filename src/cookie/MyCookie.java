@@ -19,7 +19,7 @@ public class MyCookie extends Cookie{
 	 * @param expiration
 	 */
 	public MyCookie(String sessionID, Integer versionNumber, LocationMetadata locationData, Integer expiration) {
-		super(cookieName, sessionID);
+		super(cookieName, sessionID+'_'+versionNumber + "_"+locationData.toString());
 		this.sessionID = sessionID;
 		this.versionNumber = versionNumber;
 		this.locationData = locationData;
