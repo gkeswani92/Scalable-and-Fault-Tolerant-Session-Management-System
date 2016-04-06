@@ -79,4 +79,13 @@ public class ClusterMembership {
 			}
 			return map;
 		}
+		public static void HashMap<String, Integer> getAMIfromIP(HashMap <Integer, List<String>> map){
+
+				HashMap<String, Integer> IP_to_AMI = new HashMap<String, Integer>();
+
+				for (HashMap.Entry<Integer, List<String>> entry : map.entrySet()) 
+					IP_to_AMI.put(entry.getValue()[0],Integer.parseInt(entry.getKey()[0]));
+    			
+    			return IP_to_AMI;
+		}
 }
