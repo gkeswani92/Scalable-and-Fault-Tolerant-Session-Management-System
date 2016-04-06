@@ -88,25 +88,19 @@ public class Server implements Runnable {
 	public byte[] sessionRead(String[] requestParams){
 		
 		//Extracting the params that tell us what data and version is being requested
-		if(requestParams.length != 4){
-			System.out.println("Invalid request params received");
+		if(requestParams.length != 3){
+			System.out.println("Invalid request params received: "+requestParams);
 			return null;
 		}
 		
 		//Finding the local session information known corresponding to the
 		//requested session id
+		String callID = requestParams[0];
 		String sessionID = requestParams[2];
-		Integer versionNumber = Integer.parseInt(requestParams[3]);
 		MySession session = SessionManager.sessionInformation.get(sessionID);
 		
-		//NOTE: May not be a valid case but just in case the version numbers
-		//dont match. Should never happen!
-		if(session.getVersionNumber() != versionNumber){
-			System.out.println("Invalid version number received");
-			return null;
-		}
-		
-		byte[] outBuf = session.toString().getBytes();
+		//Populate the output buffer and return
+		byte[] outBuf = (callID + '_' + session.toString()).getBytes();
 		return outBuf;
 	}
 	

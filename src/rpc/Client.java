@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -28,83 +29,113 @@ public class Client {
 	private static final Double WQ = 0.5;
 	private static final Double W = 0.75;
 	
-	public DatagramPacket sessionRead(MySession session, LocationMetadata locationData) {
+	public String[] sessionRead(String sessionId, LocationMetadata locationData) {
 		
-		System.out.println("RPC Client: Reading session data");
-		String sessionId = session.getSessionID(); 
-		int version = session.getVersionNumber(); 
+		System.out.println("RPC Client: Reading session data");  
 		
 		try {
-			@SuppressWarnings("resource")
-			DatagramSocket rpcSocket = new DatagramSocket();
-			rpcSocket.setSoTimeout(TIMEOUT);
-			
 			//Generating a unique id for this call/request to ignore responses
 			//to stale requests
 			String callID = UUID.randomUUID().toString();
 			
-			//Fill outBuf with [ callID, operationSESSIONREAD, sessionID, version ]
-			String obuf = callID + DELIMITER + operationSESSIONREAD + DELIMITER 
-					+  sessionId + DELIMITER + version;
-			byte[] outBuf = obuf.getBytes();
-			System.out.println("RPC Client: Generated the data that is to be sent");
-			
-			//Getting the addresses of the instances that have the required data
-			//and sending the request to all of them
+			DatagramSocket rpcSocket = new DatagramSocket();
 			List<String> ipAddress = locationData.getWqaddress();
-			for(String destIp: ipAddress){
-				DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length, InetAddress.getByName(destIp), portProj1bRPC);
-				rpcSocket.send(sendPkt);
-			}
-			System.out.println("RPC Client: Sent packet to the other instances");
+			rpcSocket.setSoTimeout(TIMEOUT);
 			
-			//Waiting for the first successful response and exiting
-			int responses = 0;
-			int numServers = ipAddress.size();
+			//Sending read request to other RPC servers
+			sendReadRequest(sessionId, callID, rpcSocket, ipAddress);
 			
-			while (responses <= numServers) {
-				byte[] inBuf = new byte[MAX_PACKET_SIZE];
-				DatagramPacket recvPkt = new DatagramPacket(inBuf, inBuf.length);
-				String[] responseParams = null;
-
-				try {
-					do {
-						//Receive datagram packet and check if the packet is for
-						//the current call id
-						recvPkt.setLength(inBuf.length);
-						rpcSocket.receive(recvPkt);
-						inBuf = recvPkt.getData();
-						if (inBuf != null) {
-							String response = Arrays.toString(inBuf);
-							responseParams = response.split(DELIMITER);
-						}
-					} while (responseParams == null || !responseParams[0].equals(callID));
-				} catch (SocketTimeoutException stoe) {
-					responses++;
-					recvPkt = null;
-					continue;
-				} catch (IOException ioe) {
-					responses++;
-					recvPkt = null;
-					ioe.printStackTrace();
-					continue;
-				}
-
-				// If we reach this point, it means the call id in the response
-				// params matches the call id we sent out
-				System.out.println("RPC Client: Received a packet from one of the instance");
-				rpcSocket.close();
-				return recvPkt;
+			//Wait for response from one of the RPC servers
+			DatagramPacket recvPkt = getResponseForReadRequest(callID, rpcSocket, ipAddress);
+			
+			if(recvPkt != null){
+				String output = new String(recvPkt.getData()).trim();
+				String[] session_params = output.split("_");
+				return session_params;
+			} else {
+				System.out.println("RPC Client: No packet was received");
+				return new String[0];
 			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		return new String[0];
+	}
+	
+	/**
+	 * Sends the read request to those ip addresses that are present in the 
+	 * cookie
+	 */
+	private void sendReadRequest(String sessionId, String callID, DatagramSocket 
+			rpcSocket, List<String> ipAddress) throws UnknownHostException, IOException {
+		
+		//Fill outBuf with [ callID, operationSESSIONREAD, sessionID, version ]
+		String obuf = callID + DELIMITER + operationSESSIONREAD + DELIMITER 
+				+  sessionId;
+		byte[] outBuf = obuf.getBytes();
+		System.out.println("RPC Client: Generated the data that is to be sent: "+obuf);
+		
+		//Getting the addresses of the instances that have the required data
+		//and sending the request to all of them
+		
+		for(String destIp: ipAddress){
+			DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length, 
+					InetAddress.getByName(destIp), portProj1bRPC);
+			rpcSocket.send(sendPkt);
+		}
+		System.out.println("RPC Client: Sent packet to the other instances");
+	}
+	
+	/**
+	 * Returns the packet it receives from the first successful response
+	 */
+	private DatagramPacket getResponseForReadRequest(String callID, DatagramSocket 
+			rpcSocket, List<String> ipAddress) {
+		
+		//Waiting for the first successful response and exiting
+		int responses = 0;
+		int numServers = ipAddress.size();
+		
+		while (responses <= numServers) {
+			byte[] inBuf = new byte[MAX_PACKET_SIZE];
+			DatagramPacket recvPkt = new DatagramPacket(inBuf, inBuf.length);
+			String[] responseParams = null;
+
+			try {
+				do {
+					//Receive datagram packet and check if the packet is for the current call id
+					recvPkt.setLength(inBuf.length);
+					rpcSocket.receive(recvPkt);
+					inBuf = recvPkt.getData();
+					if (inBuf != null) {
+						String response = Arrays.toString(inBuf);
+						responseParams = response.split(DELIMITER);
+					}
+				} while (responseParams == null || !responseParams[0].equals(callID));
+			} catch (SocketTimeoutException stoe) {
+				responses++;
+				recvPkt = null;
+				continue;
+			} catch (IOException ioe) {
+				responses++;
+				recvPkt = null;
+				ioe.printStackTrace();
+				continue;
+			}
+
+			// If we reach this point, it means the call id in the response
+			// params matches the call id we sent out
+			System.out.println("RPC Client: Received a packet from one of the instance");
+			rpcSocket.close();
+			return recvPkt;
 		}
 		return null;
 	}
 	
-	public boolean sessionWrite(MySession session) {
+	public List<String> sessionWrite(MySession session) {
 		
-		
+		List<String> wqAddress = new ArrayList<String>();
 		String sessionId = session.getSessionID(); 
 		int version = session.getVersionNumber(); 
 		String data = session.getMessage(); 
@@ -140,7 +171,6 @@ public class Client {
 			//Continue probing for successful responses until we get enought
 			//successes or we run out of servers 
 			System.out.println("RPC Client: waiting for responses from WQ instances");
-			List<Integer> wqAddress = new ArrayList<Integer>();
 			int responses = 0;
 			int successfulResponses = 0;
 			while(successfulResponses < Math.ceil(WQ * numServers) && responses < numServers){
@@ -162,8 +192,9 @@ public class Client {
 					} while(responseParams == null || !responseParams[0].equals(callID));
 					successfulResponses++;
 					String ip = recvPkt.getAddress().toString();
-					System.out.println("RPC Client: Received a successful response from " + ip + ". Count = "+successfulResponses);
-					wqAddress.add(ClusterMembership.getAMIFromIP(ip));
+					Integer ami = ClusterMembership.getAMIFromIP(ip);
+					wqAddress.add(ami.toString());
+					System.out.println("RPC Client: Received a successful response from IP: " + ip + " and AMI: " + ami +". Count = "+successfulResponses);
 				} 
 				catch(SocketTimeoutException stoe) {
 					stoe.printStackTrace();
@@ -173,7 +204,7 @@ public class Client {
 				  } catch(IOException ioe) {
 				    ioe.printStackTrace();
 				    rpcSocket.close(); //IOException leads to exit with a false flag
-				    return false;
+				    return wqAddress;
 				  }
 				
 				//We get to this point only if a response was successful
@@ -181,10 +212,10 @@ public class Client {
 			}
 			System.out.println("RPC Client: Consensus has been received");
 			rpcSocket.close();
-			return true;
+			return wqAddress;
 		} catch(Exception e) {
 			e.printStackTrace();
-			return false;
+			return wqAddress;
 		}
 	}
 	

@@ -1,7 +1,9 @@
 package servlet;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -43,27 +45,22 @@ public class Servlet extends HttpServlet {
 		//of them came from our server
 		Cookie[] cookies =  request.getCookies();
 		Cookie cookie = findCorrectCookie(cookies);
-
+		
 		//Gets the session if it already exists, otherwise creates a new one
 		newSession = getSession(cookie);
 		
-		if(newSession == null){
-			newSession = new MySession();
-			sessionTable.addSession(newSession);
-			System.out.println("New session has been created since session id "
-					+ "in the cookie was terminated. Ignore post params");
-		}
-		
-		//At this point, we have made the changes to the session that we needed
-		//make. We now need to use RPC to update the session on the other nodes		
-		boolean consensus = true;
+		//At this point, we have either gathered the session data from other
+		//nodes or created a new one. So we send it to other nodes and gather
+		//the ami indexes of nodes that responded successfully
+		List<String> wqaddress = new ArrayList<String>();
 		do{
-			consensus = rpcClient.sessionWrite(newSession);
-		} while( consensus == false );
-		System.out.println("Consensus has been received");
+			wqaddress = rpcClient.sessionWrite(newSession);
+		} while( wqaddress.size() == 0 );
+		System.out.println("Servlet: Consensus has been received");
 				
 		//Retrieving the newly created cookie and sending it back in the response
-		newCookie = new MyCookie(newSession.getSessionID(), newSession.getVersionNumber(), new LocationMetadata(), MySession.AGE);
+		newCookie = new MyCookie(newSession.getSessionID(), newSession.getVersionNumber(), 
+				new LocationMetadata(wqaddress), MySession.AGE);
 		response.addCookie(newCookie);
 		
 		//Render the web page with the details
@@ -115,16 +112,18 @@ public class Servlet extends HttpServlet {
 			}
 		}
 		
-		//At this point, we have made the changes to the session that we needed
-		//make. We now need to use RPC to update the session on the other nodes
-		boolean consensus = false;
+		//At this point, we have either gathered the session data from other
+		//nodes or created a new one. So we send it to other nodes and gather
+		//the ami indexes of nodes that responded successfully
+		List<String> wqaddress = new ArrayList<String>();
 		do{
-			consensus = rpcClient.sessionWrite(session);
-		} while( consensus == false );
+			wqaddress = rpcClient.sessionWrite(session);
+		} while( wqaddress.size() == 0 );
+		System.out.println("Servlet: Consensus has been received");
 		
 		//Render the web page with the updated details and send back the 
 		//latest cookie to the client
-		MyCookie myCookie = new MyCookie(session.getSessionID(), session.getVersionNumber(), new LocationMetadata(), MySession.AGE);
+		MyCookie myCookie = new MyCookie(session.getSessionID(), session.getVersionNumber(), new LocationMetadata(wqaddress), MySession.AGE);
 		response.addCookie(myCookie);
 		displayWebPage(response, myCookie, session);
 	}
@@ -142,10 +141,12 @@ public class Servlet extends HttpServlet {
 		if(cookies != null){
 			for(Cookie c: cookies){
 				if(c.getName().equals("CS5300PROJ1SESSION")){
+					System.out.println("Servlet: A cookie was sent by the browser");
 					return c;
 				}
 			}
 		}
+		System.out.println("Servlet: No cookie was sent by the browser");
 		return null;
 	}
 	
@@ -157,25 +158,45 @@ public class Servlet extends HttpServlet {
 	 * @return
 	 */
 	private MySession getSession(Cookie cookie) {
+
+		//Create a new session or refresh an existing one depending on whether
+		//a cookie was passed to us by the browser that was created by us		
 		MySession newSession;
 		
-		// Create a new session or refresh an existing one depending on whether
-		// a cookie was passed to us by the browser that was created by us
+		//Created a new session and added it to the session table
 		if(cookie == null){
-			System.out.println("New cookie and session needs to be created");
-			
-			//Created a new session and added it to the session table
+			System.out.println("Servlet: New cookie and session needs to be created");	
 			newSession = new MySession();
 			sessionTable.addSession(newSession);
-			System.out.println("New session and cookie have been created");
+			System.out.println("Servlet: New cookie and session have been created");
 		} else {
-			System.out.println("Old cookie has been received. New one does not need to be created");
+			System.out.println("Servlet: Old cookie has been received. New one does"
+					+ " not need to be created");
 			
 			//Retrieving details about the session using the session id stored in
 			//cookie
-			String sessionID = cookie.getValue();
-			System.out.println(sessionTable.getSessionTableSize());
-			newSession = sessionTable.getSession(sessionID);
+			String cookieDetails = cookie.getValue();
+		    String[] cookie_params = cookieDetails.split("_");
+	        String sessionID = cookie_params[0];
+	        LocationMetadata locationData = new LocationMetadata(cookie_params[2]);
+		    System.out.println("Servlet: Session ID: " + sessionID + " and "
+		    		+ "Locations: "+locationData.toString());
+	        
+			//Calling session read using the RPC client to get data back from the
+			//first instance that replies
+		    String[] sessionData = rpcClient.sessionRead(sessionID, locationData);
+			
+		    if(sessionData.length == 4){
+				newSession = new MySession(sessionData[0], Integer.parseInt(sessionData[1]), 
+						sessionData[2], sessionData[3]);
+				sessionTable.addSession(newSession);
+				System.out.println("Servlet: Session data has been gathered from "
+						+ "another instance and has been stored in the local table");
+		    } else {
+		    	newSession = new MySession();
+		    	System.out.println("New session has been created and stored"+ 
+		    							"in the local session table");
+		    }
 		}
 		return newSession;
 	}
