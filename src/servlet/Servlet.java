@@ -34,7 +34,7 @@ public class Servlet extends HttpServlet {
 		rpcClient = new Client();
 		rpcServer = new Server();
 		new Thread(rpcServer).start();
-		new Thread(bgt).start()
+		new Thread(bgt).start();
 	}
 	
 	@Override

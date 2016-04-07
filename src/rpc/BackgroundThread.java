@@ -10,25 +10,23 @@ import cluster.ClusterMembership;
 
 public class BackgroundThread implements Runnable {
 	
-	public BackgroundThread(){}
-	
 	@Override
 	public void run() {
 		boolean flag = true;	
 		int i = 0;
 		while(flag){
 			i++;
-			System.out.println("Thread started... Counter ==> " + i);	
+			System.out.println("Thread started... Call Number Is: ==> " + i);	
 			//-----Background Thread Functionality Goes Here-----
 
-			//read file contents to list format
-			List<String> destinationIPAddresses = ClusterMembership.getMemberIPAddress();
-			for(String destIp: destinationIPAddresses){
-				System.out.println("BGT BGT: "+destIp);
-
+			//read and parse file
+			List<String> reboot_counts = ClusterMembership.getMemberReboot();
+			for(String reboot: reboot_counts){
+				System.out.println("REBOOT COUNT: "+reboot);
+			}
 
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(60000);
 			} 
 			catch (InterruptedException e) {
 				e.printStackTrace();

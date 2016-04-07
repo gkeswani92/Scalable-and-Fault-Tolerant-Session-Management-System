@@ -45,6 +45,23 @@ public class ClusterMembership {
 	}
 
 	/**
+	 * Gets the reboots in-order of ip list of the instances on record
+	 * @return
+	 */
+	public static List<String> getMemberReboot(){
+		collectClusterData();
+		List<String> reboots = new ArrayList<String>();
+		for(Integer amiIndex: membership.keySet()){
+			String current_reboot = membership.get(amiIndex).get(2);
+			reboots.add(current_reboot);
+		}
+		
+		return reboots;
+	}
+
+
+
+	/**
 	 * Gets the ami index of the ip addresses
 	 * @return
 	 */
