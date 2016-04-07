@@ -17,7 +17,7 @@ import cookie.LocationMetadata;
 import cookie.MyCookie;
 import rpc.Client;
 import rpc.Server;
-import rpc.BackgoundThread;
+import rpc.BackgroundThread;
 import session.MySession;
 import session.SessionManager;
 
