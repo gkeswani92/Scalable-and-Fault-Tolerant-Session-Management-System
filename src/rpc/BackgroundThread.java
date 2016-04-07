@@ -1,6 +1,5 @@
 package rpc;
 
-import java.io.IOException;
 
 import org.apache.catalina.tribes.util.Arrays;
 
@@ -9,7 +8,6 @@ import session.SessionManager;
 import cluster.ClusterMembership;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 

@@ -28,7 +28,7 @@ public class Servlet extends HttpServlet {
 	private static SessionManager sessionTable = new SessionManager();
 	private static Client rpcClient;
 	private static Server rpcServer;
-	private static BackgoundThread bgt;
+	private static BackgroundThread bgt;
 	
 	public Servlet(){
 		rpcClient = new Client();
