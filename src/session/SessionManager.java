@@ -43,12 +43,14 @@ public class SessionManager extends HttpServlet{
 	 * Cleaning up all sessions which have already expired
 	 */
 	public void cleanUpExpiredSessions(){
-		Iterator<Entry<String, MySession>> i = sessionInformation.entrySet().iterator();
-		while(i.hasNext()){
-			Entry<String, MySession> sessionEntry = i.next();
-			if(sessionEntry.getValue().getExpirationDate().before(new Date())){
-				System.out.println("Cleaned up an expired session");
-				i.remove();
+		if(sessionInformation != null){
+			Iterator<Entry<String, MySession>> i = sessionInformation.entrySet().iterator();
+			while(i.hasNext()){
+				Entry<String, MySession> sessionEntry = i.next();
+				if(sessionEntry.getValue().getExpirationDate().before(new Date())){
+					System.out.println("Cleaned up an expired session");
+					i.remove();
+				}
 			}
 		}
 	}

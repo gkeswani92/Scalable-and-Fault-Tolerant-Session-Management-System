@@ -6,7 +6,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -39,7 +38,7 @@ public class Servlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) 
 										throws ServletException, IOException {
 		
-		//sessionTable.cleanUpExpiredSessions();
+		sessionTable.cleanUpExpiredSessions();
 		MySession newSession = null;
 		MyCookie newCookie = null;
 		List<String> wqaddress = null;
@@ -73,7 +72,7 @@ public class Servlet extends HttpServlet {
 	public void doPost(HttpServletRequest request, HttpServletResponse response) 
 										throws ServletException, IOException {
 		
-		//sessionTable.cleanUpExpiredSessions();
+		sessionTable.cleanUpExpiredSessions();
 		List<String> wqaddress = null;
 		MySession session = null;
 		
