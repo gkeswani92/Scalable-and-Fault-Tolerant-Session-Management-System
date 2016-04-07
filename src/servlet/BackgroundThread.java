@@ -21,12 +21,14 @@ public class BackgroundThread implements Runnable {
 			System.out.println("Thread started... Counter ==> " + i);	
 			//-----Background Thread Functionality Goes Here-----
 
-			//read and parse file
+			//read file contents to list format
 			List<String> destinationIPAddresses = ClusterMembership.getMemberIPAddress();
+			for(String destIp: destinationIPAddresses){
+				System.out.println("BGT BGT: "+destIp);
 
 
 			try {
-				Thread.sleep(20000);
+				Thread.sleep(2000);
 			} 
 			catch (InterruptedException e) {
 				e.printStackTrace();
