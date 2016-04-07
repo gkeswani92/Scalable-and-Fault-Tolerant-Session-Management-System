@@ -13,7 +13,6 @@ import session.SessionManager;
 
 public class Server implements Runnable {
 	
-	private final static int portProj1bRPC = 5300;
 	private boolean isRunning = true;
 	private DatagramSocket rpcSocket;
 		
@@ -45,7 +44,6 @@ public class Server implements Runnable {
 			    String input = new String(recvPkt.getData()).trim();
 			    String[] requestParams = input.split(Client.getDelimiter());
 			    System.out.println("RPC Server: Received packet: " + input);
-			    System.out.println("RPC Server: Received params: " + requestParams);
 			    
 			    //The inBuf contains the callID and operationCode
 			    if(requestParams.length > 1){
@@ -63,12 +61,16 @@ public class Server implements Runnable {
 				    		break;
 				    }
 				    
-				    //Here outBuf should contain the callID and results of the call
-				    //Sending the packet back to the address and port it had come from
-				    DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length,
-				    	returnAddr, returnPort);
-				    rpcSocket.send(sendPkt);
-				    System.out.println("Send packet back to the client");
+				    if(outBuf != null){
+					    //Here outBuf should contain the callID and results of the call
+					    //Sending the packet back to the address and port it had come from
+					    DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length,
+					    	returnAddr, returnPort);
+					    rpcSocket.send(sendPkt);
+					    System.out.println("RPC Server: Sent packet back to the client");
+				    } else {
+				    	System.out.println("RPC Server: Did not find data to return to client");
+				    }
 			    } else {
 			    	System.out.println("RPC Server: Invalid request params");
 			    }
@@ -89,7 +91,7 @@ public class Server implements Runnable {
 		
 		//Extracting the params that tell us what data and version is being requested
 		if(requestParams.length != 3){
-			System.out.println("Invalid request params received: "+requestParams);
+			System.out.println("RPC Server: Invalid request params received: "+requestParams);
 			return null;
 		}
 		
@@ -99,10 +101,16 @@ public class Server implements Runnable {
 		String sessionID = requestParams[2];
 		MySession session = SessionManager.sessionInformation.get(sessionID);
 		
-		//Populate the output buffer and return
-		byte[] outBuf = (callID + '_' + session.toString()).getBytes();
-		return outBuf;
+		if(session != null){
+			//Populate the output buffer and return
+			String obuf = (callID + '_' + session.toString());
+			System.out.println("RPC Server Read: Sending session data back to client: "+obuf);
+			return obuf.getBytes();
+		} else {
+			return null;
+		}
 	}
+		
 	
 	/**
 	 * Read the request params received by the server and return the session 
@@ -131,6 +139,7 @@ public class Server implements Runnable {
 		if(session == null){
 			System.out.println("Session information was not found. Creating new session");
 			session = new MySession(sessionID, versionNumber, message, expirationTime);
+			SessionManager.sessionInformation.put(sessionID, session);
 		}
 		
 		//NOTE: May not be a valid case but just in case the version numbers

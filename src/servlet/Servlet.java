@@ -36,7 +36,7 @@ public class Servlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) 
 										throws ServletException, IOException {
 		
-		sessionTable.cleanUpExpiredSessions();
+		//sessionTable.cleanUpExpiredSessions();
 		MySession newSession = null;
 		MyCookie newCookie = null;
 		
@@ -65,13 +65,15 @@ public class Servlet extends HttpServlet {
 		
 		//Render the web page with the details
 		displayWebPage(response, newCookie, newSession);
+		
+		System.out.println(" ");
 	}
 
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) 
 										throws ServletException, IOException {
 		
-		sessionTable.cleanUpExpiredSessions();
+		//sessionTable.cleanUpExpiredSessions();
 		
 		//Get all the cookies that were received in the request and find the one 
 		//that was sent by our server. There has to be one since this is a POST
@@ -126,6 +128,8 @@ public class Servlet extends HttpServlet {
 		MyCookie myCookie = new MyCookie(session.getSessionID(), session.getVersionNumber(), new LocationMetadata(wqaddress), MySession.AGE);
 		response.addCookie(myCookie);
 		displayWebPage(response, myCookie, session);
+		
+		System.out.println(" ");
 	}
 	
 	/**

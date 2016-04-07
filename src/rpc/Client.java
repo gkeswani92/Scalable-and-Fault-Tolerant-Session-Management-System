@@ -22,7 +22,7 @@ public class Client {
 	private final static int operationSESSIONWRITE = 2;
 	private final static int portProj1bRPC = 5300;
 	private final static String DELIMITER = "_";
-	private final static int TIMEOUT = 300;
+	private final static int TIMEOUT = 1000;
 	public  final static int MAX_PACKET_SIZE = 4096;
 	
 	//Tunable parameters to maintain 1 resiliency
@@ -80,11 +80,11 @@ public class Client {
 		//and sending the request to all of them
 		
 		for(String destIp: ipAddress){
+			System.out.println("RPC Client: Sent packet to "+destIp);
 			DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length, 
 					InetAddress.getByName(destIp), portProj1bRPC);
 			rpcSocket.send(sendPkt);
-		}
-		System.out.println("RPC Client: Sent packet to the other instances");
+		}	
 	}
 	
 	/**
@@ -104,20 +104,28 @@ public class Client {
 
 			try {
 				do {
-					//Receive datagram packet and check if the packet is for the current call id
+					//Receive datagram packet and check if the packet is for the 
+					//current call id
 					recvPkt.setLength(inBuf.length);
 					rpcSocket.receive(recvPkt);
 					inBuf = recvPkt.getData();
+					
 					if (inBuf != null) {
-						String response = Arrays.toString(inBuf);
+						String response = new String(recvPkt.getData()).trim();
+						System.out.println("RPC Client: Received a response: "+response);
 						responseParams = response.split(DELIMITER);
 					}
 				} while (responseParams == null || !responseParams[0].equals(callID));
+				
+				System.out.println("RPC Client: Received a successful response");
+				
 			} catch (SocketTimeoutException stoe) {
-				responses++;
+				stoe.printStackTrace();
+				responses++; //TODO: Remove this later
 				recvPkt = null;
 				continue;
 			} catch (IOException ioe) {
+				ioe.printStackTrace();
 				responses++;
 				recvPkt = null;
 				ioe.printStackTrace();
@@ -162,10 +170,10 @@ public class Client {
 			List<String> destinationIPAddresses = ClusterMembership.getMemberIPAddress();
 			int numServers = destinationIPAddresses.size();
 			for(String destIp: destinationIPAddresses){
+				System.out.println("RPC Client: sending to "+destIp);
 				DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length, 
 						InetAddress.getByName(destIp), portProj1bRPC);
 				rpcSocket.send(sendPkt);
-				System.out.println("RPC Client: sending to "+destIp);
 			}
 			
 			//Continue probing for successful responses until we get enought
