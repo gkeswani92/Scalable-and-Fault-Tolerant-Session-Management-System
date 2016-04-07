@@ -3,7 +3,10 @@ package servlet;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -39,6 +42,7 @@ public class Servlet extends HttpServlet {
 		//sessionTable.cleanUpExpiredSessions();
 		MySession newSession = null;
 		MyCookie newCookie = null;
+		List<String> wqaddress = null;
 		
 		//Get all the cookie that was received in the request and find if any
 		//of them came from our server
@@ -46,17 +50,13 @@ public class Servlet extends HttpServlet {
 		Cookie cookie = findCorrectCookie(cookies);
 		
 		//Gets the session if it already exists, otherwise creates a new one
-		newSession = getSession(cookie);
+		Map<MySession, List<String>> session_location_data = getSession(cookie);
+		for (Map.Entry<MySession, List<String>> entry : session_location_data.entrySet())
+		{
+			newSession = entry.getKey();
+			wqaddress = entry.getValue();
+		}
 		
-		//At this point, we have either gathered the session data from other
-		//nodes or created a new one. So we send it to other nodes and gather
-		//the ami indexes of nodes that responded successfully
-		List<String> wqaddress = new ArrayList<String>();
-		do{
-			wqaddress = rpcClient.sessionWrite(newSession);
-		} while( wqaddress.size() == 0 );
-		System.out.println("Servlet: Consensus has been received");
-				
 		//Retrieving the newly created cookie and sending it back in the response
 		newCookie = new MyCookie(newSession.getSessionID(), newSession.getVersionNumber(), 
 				new LocationMetadata(wqaddress), MySession.AGE);
@@ -74,6 +74,8 @@ public class Servlet extends HttpServlet {
 										throws ServletException, IOException {
 		
 		//sessionTable.cleanUpExpiredSessions();
+		List<String> wqaddress = null;
+		MySession session = null;
 		
 		//Get all the cookies that were received in the request and find the one 
 		//that was sent by our server. There has to be one since this is a POST
@@ -81,7 +83,14 @@ public class Servlet extends HttpServlet {
 		//find the corresponding session using the session id stored in the cookie
 		Cookie[] cookies =  request.getCookies();
 		Cookie cookie = findCorrectCookie(cookies);
-		MySession session = getSession(cookie);
+		
+		//Getting the session and the location metadata
+		Map<MySession, List<String>> session_location_data = getSession(cookie);
+		for (Map.Entry<MySession, List<String>> entry : session_location_data.entrySet())
+		{
+			session = entry.getKey();
+			wqaddress = entry.getValue();
+		}
 		
 		//If the cookie had a stale session that has been discarded, we need to
 		//create a new session and a new cookie
@@ -117,7 +126,7 @@ public class Servlet extends HttpServlet {
 		//At this point, we have either gathered the session data from other
 		//nodes or created a new one. So we send it to other nodes and gather
 		//the ami indexes of nodes that responded successfully
-		List<String> wqaddress = new ArrayList<String>();
+		wqaddress = new ArrayList<String>();
 		do{
 			wqaddress = rpcClient.sessionWrite(session);
 		} while( wqaddress.size() == 0 );
@@ -161,10 +170,11 @@ public class Servlet extends HttpServlet {
 	 * @param cookie
 	 * @return
 	 */
-	private MySession getSession(Cookie cookie) {
+	private Map<MySession, List<String>> getSession(Cookie cookie) {
 
 		//Create a new session or refresh an existing one depending on whether
 		//a cookie was passed to us by the browser that was created by us		
+		Map<MySession, List<String>> data = new HashMap<MySession, List<String>>();
 		MySession newSession;
 		
 		//Created a new session and added it to the session table
@@ -173,7 +183,20 @@ public class Servlet extends HttpServlet {
 			newSession = new MySession();
 			sessionTable.addSession(newSession);
 			System.out.println("Servlet: New cookie and session have been created");
-		} else {
+			
+			//At this point, we have created a new session and so we send it to 
+			//other nodes and gather the ami indexes of nodes that responded 
+			//successfully
+			System.out.println("Servlet: New session data is to be transmitted to other instances");
+			List<String> wqaddress = new ArrayList<String>();
+			do{
+				wqaddress = rpcClient.sessionWrite(newSession);
+			} while( wqaddress.size() == 0 );
+			data.put(newSession, wqaddress);
+			System.out.println("Servlet: Consensus has been received");
+		} 
+		
+		else {
 			System.out.println("Servlet: Old cookie has been received. New one does"
 					+ " not need to be created");
 			
@@ -190,19 +213,19 @@ public class Servlet extends HttpServlet {
 			//first instance that replies
 		    String[] sessionData = rpcClient.sessionRead(sessionID, locationData);
 			
-		    if(sessionData.length == 4){
-				newSession = new MySession(sessionData[0], Integer.parseInt(sessionData[1]), 
-						sessionData[2], sessionData[3]);
+		    if(sessionData.length == 5){
+				newSession = new MySession(sessionData[1], Integer.parseInt(sessionData[2]), 
+						sessionData[3], sessionData[4]);
 				sessionTable.addSession(newSession);
 				System.out.println("Servlet: Session data has been gathered from "
 						+ "another instance and has been stored in the local table");
+				
+				data.put(newSession, locationData.getWqaddress());
 		    } else {
-		    	newSession = new MySession();
-		    	System.out.println("New session has been created and stored"+ 
-		    							"in the local session table");
+		    	System.out.println("Servlet: Session data received was of invalid length: "+sessionData.length);
 		    }
 		}
-		return newSession;
+		return data;
 	}
 	
 	public void displayWebPage(HttpServletResponse response, MyCookie newCookie, 

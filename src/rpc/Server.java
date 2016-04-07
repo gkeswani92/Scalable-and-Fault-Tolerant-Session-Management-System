@@ -99,6 +99,7 @@ public class Server implements Runnable {
 		//requested session id
 		String callID = requestParams[0];
 		String sessionID = requestParams[2];
+		SessionManager.displaySessionTable();
 		MySession session = SessionManager.sessionInformation.get(sessionID);
 		
 		if(session != null){
@@ -137,7 +138,7 @@ public class Server implements Runnable {
 		MySession session = SessionManager.sessionInformation.get(sessionID);
 		
 		if(session == null){
-			System.out.println("Session information was not found. Creating new session");
+			System.out.println("RPC Server: Session information was not found. Creating new session");
 			session = new MySession(sessionID, versionNumber, message, expirationTime);
 			SessionManager.sessionInformation.put(sessionID, session);
 		}

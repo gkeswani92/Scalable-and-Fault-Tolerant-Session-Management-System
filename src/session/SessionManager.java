@@ -30,6 +30,15 @@ public class SessionManager extends HttpServlet{
 		return sessionInformation.size();
 	}
 	
+	public static void displaySessionTable(){
+		System.out.println("");
+		System.out.println("Session Table:");
+		for(String id: sessionInformation.keySet()){
+			System.out.println(id + "-->" + sessionInformation.get(id));
+		}
+		System.out.println("");
+	}
+	
 	/**
 	 * Cleaning up all sessions which have already expired
 	 */

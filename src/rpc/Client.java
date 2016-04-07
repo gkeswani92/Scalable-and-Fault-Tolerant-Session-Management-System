@@ -50,7 +50,8 @@ public class Client {
 			
 			if(recvPkt != null){
 				String output = new String(recvPkt.getData()).trim();
-				String[] session_params = output.split("_");
+				System.out.println("RPC Client: Received packet with data: "+output);
+				String[] session_params = output.split(DELIMITER);
 				return session_params;
 			} else {
 				System.out.println("RPC Client: No packet was received");
@@ -60,6 +61,7 @@ public class Client {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		System.out.println("RPC Client: No packet was received");
 		return new String[0];
 	}
 	
