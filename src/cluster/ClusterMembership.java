@@ -43,7 +43,7 @@ public class ClusterMembership {
 		
 		return ipAddr;
 	}
-	
+
 	/**
 	 * Gets the ami index of the ip addresses
 	 * @return

@@ -17,6 +17,7 @@ import cookie.LocationMetadata;
 import cookie.MyCookie;
 import rpc.Client;
 import rpc.Server;
+import rpc.BackgoundThread;
 import session.MySession;
 import session.SessionManager;
 
@@ -27,11 +28,13 @@ public class Servlet extends HttpServlet {
 	private static SessionManager sessionTable = new SessionManager();
 	private static Client rpcClient;
 	private static Server rpcServer;
+	private static BackgoundThread bgt;
 	
 	public Servlet(){
 		rpcClient = new Client();
 		rpcServer = new Server();
 		new Thread(rpcServer).start();
+		new Thread(bgt).start()
 	}
 	
 	@Override
