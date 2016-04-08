@@ -63,7 +63,7 @@ public class Servlet extends HttpServlet {
 				new LocationMetadata(wqaddress), MySession.AGE);
 		response.addCookie(newCookie);
 		System.out.println("Servlet: Added the new cookie in the response");
-		
+				
 		//Render the web page with the details
 		displayWebPage(response, newCookie, newSession);
 		
@@ -100,9 +100,9 @@ public class Servlet extends HttpServlet {
 			System.out.println("New session has been created since session id "
 					+ "in the cookie was terminated. Ignore post params");
 		} else {
-			session.incrementVersionNumber();
 		
-			if(request.getParameter("replace") != null){
+			if(request.getParameter("replace") != null) {
+				session.refreshSession();
 				System.out.println("The replace button has been pressed");	
 				String newState = request.getParameter("message");
 				
@@ -126,10 +126,7 @@ public class Servlet extends HttpServlet {
 		//At this point, we have either gathered the session data from other
 		//nodes or created a new one. So we send it to other nodes and gather
 		//the ami indexes of nodes that responded successfully
-		wqaddress = new ArrayList<String>();
-		do{
-			wqaddress = rpcClient.sessionWrite(session);
-		} while( wqaddress.size() == 0 );
+		wqaddress = sessionWriteHelper(session);
 		System.out.println("Servlet: Consensus has been received");
 		
 		//Render the web page with the updated details and send back the 
@@ -188,11 +185,7 @@ public class Servlet extends HttpServlet {
 			//other nodes and gather the ami indexes of nodes that responded 
 			//successfully
 			System.out.println("Servlet: New session data is to be transmitted to other instances");
-			List<String> wqaddress = new ArrayList<String>();
-			do{
-				wqaddress = rpcClient.sessionWrite(newSession);
-			} while( wqaddress.size() == 0 );
-			data.put(newSession, wqaddress);
+			data.put(newSession, sessionWriteHelper(newSession));
 			System.out.println("Servlet: Consensus has been received");
 		} 
 		
@@ -216,16 +209,27 @@ public class Servlet extends HttpServlet {
 		    if(sessionData.length == 5){
 				newSession = new MySession(sessionData[1], Integer.parseInt(sessionData[2]), 
 						sessionData[3], sessionData[4]);
+				newSession.refreshSession();
 				sessionTable.addSession(newSession);
 				System.out.println("Servlet: Session data has been gathered from "
 						+ "another instance and has been stored in the local table");
 				
-				data.put(newSession, locationData.getWqaddress());
+				data.put(newSession, sessionWriteHelper(newSession));
 		    } else {
 		    	System.out.println("Servlet: Session data received was of invalid length: "+sessionData.length);
 		    }
 		}
 		return data;
+	}
+	
+	public List<String> sessionWriteHelper(MySession sess) {
+		System.out.println("Servlet: New session data is to be transmitted to other instances");
+		List<String> wqaddress = new ArrayList<String>();
+		do{
+			wqaddress = rpcClient.sessionWrite(sess);
+		} while( wqaddress.size() == 0 );
+		return wqaddress;
+		
 	}
 	
 	public void displayWebPage(HttpServletResponse response, MyCookie newCookie, 

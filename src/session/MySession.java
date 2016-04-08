@@ -48,8 +48,11 @@ public class MySession implements Serializable {
 		//TODO: Need to set the expiration data by figuring out how to convert
 		//string to Calender date
 		SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
+//		Date expirationDate;
 		try {
+//			expirationDate = sdf.parse(expirationTime);
 			cal.setTime(sdf.parse(expirationTime));
+			this.setExpirationDate(cal.getTime());
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
@@ -62,7 +65,8 @@ public class MySession implements Serializable {
 	public void refreshSession(){
 		Calendar cal = Calendar.getInstance();		
 		cal.add(Calendar.SECOND, AGE);
-		this.setExpirationDate(cal.getTime());		
+		this.setExpirationDate(cal.getTime());	
+		incrementVersionNumber();
 	}
 	
 	public String toString(){
@@ -83,7 +87,6 @@ public class MySession implements Serializable {
 
 	public void setMessage(String message) {
 		this.message = message;
-		refreshSession();
 	}
 
 	public Integer getVersionNumber() {
