@@ -1,4 +1,16 @@
+#Deploying a new war file from S3
+sudo su
+cd /var/lib/tomcat8/webapps
 sudo service tomcat8 stop
 sudo rm rf Session_Management.war
 aws s3 cp s3://cs5300s16-bi49-tmm259-gk368/Session_Management.war /var/lib/tomcat8/webapps/Session_Management.war
 sudo service tomcat8 start
+
+
+
+#Tailing the log file
+sudo su
+cd /var/log/tomcat8/
+tail -f catalina.out
+
+

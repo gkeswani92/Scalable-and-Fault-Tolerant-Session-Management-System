@@ -7,8 +7,10 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 import cluster.ClusterMembership;
 import cookie.LocationMetadata;
@@ -165,12 +167,13 @@ public class Client {
 			
 			//Send the packet out to all the members and wait for WQ successful 
 			//responses 
-			//TODO: Choose numServers * W nodes at random to send out the write
-			//request. Currently sending it to all nodes
 			System.out.println("RPC Client: Sending write request to other instances");
 			List<String> destinationIPAddresses = ClusterMembership.getMemberIPAddress();
 			int numServers = destinationIPAddresses.size();
-			for(String destIp: destinationIPAddresses){
+			List<String> wChosenDestionationIP = getWRandomDestionations(destinationIPAddresses);
+			
+			System.out.println("RPC Client: Chose " + wChosenDestionationIP.size() + " instances out of "+destinationIPAddresses.size() + "at random");
+			for(String destIp: wChosenDestionationIP){
 				System.out.println("RPC Client: sending to "+destIp);
 				DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length, 
 						InetAddress.getByName(destIp), portProj1bRPC);
@@ -232,6 +235,12 @@ public class Client {
 		}
 	}
 	
+	private List<String> getWRandomDestionations(List<String> destinationIPAddresses) {
+		long seed = System.nanoTime();
+		Collections.shuffle(destinationIPAddresses, new Random(seed));
+		return destinationIPAddresses.subList(0, (int) Math.ceil(destinationIPAddresses.size() * W));
+	}
+
 	public static int getOperationsessionread() {
 		return operationSESSIONREAD;
 	}
