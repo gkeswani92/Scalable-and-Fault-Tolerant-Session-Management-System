@@ -69,9 +69,14 @@ public class ClusterMembership {
 		return ipToAMI.get(ipAddress);
 	}
 	
-	//given a file correct file path parses the contents with respect to 3 attributes
-		//creates and returns a HashMap <Integer,ArrayList<String>>, AMI_INDEX --> [(IP), (DNS), (REBOOT_COUNT)]
-		//note the index of IP is 0, DNS is 1 and REBOOT_COUNT is 2
+	     /**
+	      * Given a file correct file path parses the contents with respect to 3 attributes
+	      * creates and returns a HashMap <Integer,ArrayList<String>>, AMI_INDEX --> 
+	      * [(IP), (DNS), (REBOOT_COUNT)]
+	      * note the index of IP is 0, DNS is 1 and REBOOT_COUNT is 2
+	      * @param file
+	      * @return
+	      */
 		public static HashMap <Integer, List<String>> getMemberIPAddress(String file){
 			HashMap <Integer,List<String>> map = new HashMap<Integer, List<String>>();
 			FileReader input = null;
