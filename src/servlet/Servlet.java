@@ -102,7 +102,6 @@ public class Servlet extends HttpServlet {
 		} else {
 		
 			if(request.getParameter("replace") != null) {
-				session.refreshSession();
 				System.out.println("The replace button has been pressed");	
 				String newState = request.getParameter("message");
 				
@@ -114,7 +113,7 @@ public class Servlet extends HttpServlet {
 					System.out.println("New state cannot be empty. Not changing it");
 				}
 			} else if(request.getParameter("refresh") != null){
-				session.refreshSession();
+				
 			} else {
 				sessionTable.terminateSession(session);
 				PrintWriter out = response.getWriter();
