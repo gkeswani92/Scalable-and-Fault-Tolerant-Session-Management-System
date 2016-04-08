@@ -17,7 +17,7 @@ import cookie.LocationMetadata;
 import cookie.MyCookie;
 import rpc.Client;
 import rpc.Server;
-import rpc.BackgroundThread;
+import rpc.SessionCleanerThread;
 import session.MySession;
 import session.SessionManager;
 
@@ -28,20 +28,19 @@ public class Servlet extends HttpServlet {
 	private static SessionManager sessionTable = new SessionManager();
 	private static Client rpcClient;
 	private static Server rpcServer;
-	private static BackgroundThread bgt;
+	private static SessionCleanerThread sessionCleaner = new SessionCleanerThread();
 	
 	public Servlet(){
 		rpcClient = new Client();
 		rpcServer = new Server();
 		new Thread(rpcServer).start();
-		new Thread(bgt).start();
+		new Thread(sessionCleaner).start();
 	}
 	
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) 
 										throws ServletException, IOException {
 		
-		sessionTable.cleanUpExpiredSessions();
 		MySession newSession = null;
 		MyCookie newCookie = null;
 		List<String> wqaddress = null;
@@ -75,7 +74,6 @@ public class Servlet extends HttpServlet {
 	public void doPost(HttpServletRequest request, HttpServletResponse response) 
 										throws ServletException, IOException {
 		
-		sessionTable.cleanUpExpiredSessions();
 		List<String> wqaddress = null;
 		MySession session = null;
 		
