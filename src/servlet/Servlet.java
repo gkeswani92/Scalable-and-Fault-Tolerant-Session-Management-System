@@ -13,6 +13,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import cluster.Instance;
 import cookie.LocationMetadata;
 import cookie.MyCookie;
 import rpc.Client;
@@ -50,6 +52,10 @@ public class Servlet extends HttpServlet {
 		MySession newSession = null;
 		MyCookie newCookie = null;
 		List<String> wqaddress = null;
+		
+		System.out.println("Servlet ami index: "+Instance.getAmiIndex());
+		System.out.println("Servlet ip address: "+Instance.getIpAddr());
+		System.out.println("Servlet reboot count: "+Instance.getRebootCount());
 		
 		//Get all the cookie that was received in the request and find if any
 		//of them came from our server
