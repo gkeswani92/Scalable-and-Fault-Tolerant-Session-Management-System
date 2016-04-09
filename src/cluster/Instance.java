@@ -25,10 +25,10 @@ public class Instance {
 			String currentLine = null;
 			Integer lineCount = 0;
 			
-			
 			try {
 				while ((currentLine = bufRead.readLine()) != null)
 				{    
+<<<<<<< HEAD
 					if (currentLine.isEmpty()) break;
 
 					if(lineCount == 0){
@@ -40,6 +40,15 @@ public class Instance {
 						continue;
 					} else {
 						setRebootCount(Integer.parseInt(currentLine.substring(18)));
+=======
+					if (lineCount == 1){
+						setAmiIndex(Integer.parseInt(currentLine.substring(6).trim()));	
+					} else if (lineCount == 1){
+						setIpAddr(currentLine.substring(14).trim());
+					} else if (lineCount == 2){
+					} else {
+						setRebootCount(Integer.parseInt(currentLine.substring(18).trim()));
+>>>>>>> origin/master
 					}
 					lineCount++;
 				}
