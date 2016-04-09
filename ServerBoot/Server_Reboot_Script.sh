@@ -13,9 +13,9 @@ rm ami-launch-index
 reboot_count=$(aws sdb get-attributes --domain-name "Server_Table" --item-name $ami_value --attribute-names "REBOOT" --query '[Attributes[0].Value]' --output text --no-paginate)
 ((reboot_count++))
 aws sdb put-attributes --domain-name "Server_Table" --item-name $ami_value --attributes Name="REBOOT",Value=$reboot_count,Replace=true
-sleep 2
-meta_data=$(aws sdb select --select-expression "select * from Server_Table" --output text --no-paginate)
-echo $meta_data > servers.txt
+sleep 6
+aws sdb select --select-expression "select * from Server_Table" --output text --no-paginate > servers.txt
+aws sdb select --select-expression "select * from Server_Table where itemName() = '$ami_value'" --output text --no-paginate > instance_info.txt
 echo "DB - Finalized"
 service tomcat8 start
 echo "TOMCAT STARTED"

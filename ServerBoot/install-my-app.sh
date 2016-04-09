@@ -46,6 +46,7 @@ do
 	echo "2_attr_in_db: $attr_in_db"
 done
 aws sdb select --select-expression "select * from Server_Table" --output text --no-paginate > servers.txt
+aws sdb select --select-expression "select * from Server_Table where itemName() = '$ami_value'" --output text --no-paginate > instance_info.txt
 echo "DB - Finalized"
 service tomcat8 start
 echo "TOMCAT STARTED"
