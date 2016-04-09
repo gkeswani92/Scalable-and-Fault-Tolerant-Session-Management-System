@@ -29,12 +29,17 @@ public class Instance {
 			try {
 				while ((currentLine = bufRead.readLine()) != null)
 				{    
-					if(lineCount ==0){
-						setAmiIndex(Integer.parseInt(currentLine.trim()));
+					if (currentLine.isEmpty()) break;
+
+					if(lineCount == 0){
+						setAmiIndex(Integer.parseInt(currentLine.substring(6)));
 					} else if(lineCount == 1){
-						setIpAddr(currentLine.trim());
+						setIpAddr(currentLine.substring(14));
+					} else if(lineCount == 2){
+						lineCount++;
+						continue;
 					} else {
-						setRebootCount(Integer.parseInt(currentLine.trim()));
+						setRebootCount(Integer.parseInt(currentLine.substring(18)));
 					}
 					lineCount++;
 				}
