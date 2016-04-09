@@ -28,13 +28,19 @@ public class Servlet extends HttpServlet {
 	private static SessionManager sessionTable = new SessionManager();
 	private static Client rpcClient;
 	private static Server rpcServer;
-	private static SessionCleanerThread sessionCleaner = new SessionCleanerThread();
+	private static SessionCleanerThread sessionCleaner;
 	
 	public Servlet(){
+		System.out.println("Starting Client and Session Table Cleaner");
 		rpcClient = new Client();
+		sessionCleaner = new SessionCleanerThread();
+		new Thread(sessionCleaner).start();
+	}
+	
+	public void initialize(){
+		System.out.println("Servlet init called by Context Listener and starting RPC Server");
 		rpcServer = new Server();
 		new Thread(rpcServer).start();
-		new Thread(sessionCleaner).start();
 	}
 	
 	@Override

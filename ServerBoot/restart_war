@@ -14,3 +14,8 @@ cd /var/log/tomcat8/
 tail -f catalina.out
 
 
+aws sdb delete-domain --domain-name "Server_Table" 
+aws sdb create-domain --domain-name "Server_Table" 
+
+
+
