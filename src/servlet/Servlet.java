@@ -278,6 +278,7 @@ public class Servlet extends HttpServlet {
 		out.println("</div");
 		out.println("</div>");
 		out.println("</form>");
+		
 		out.println("<br/><br/>");
 		out.println("<b>Cookie: </b>" + newCookie.toString());
 		out.println("<br/><b>Expires: </b> " + newSession.getExpirationDate());

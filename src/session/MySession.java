@@ -6,8 +6,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-import java.util.UUID;
-
 import cluster.Instance;
 
 public class MySession implements Serializable {
@@ -117,5 +115,16 @@ public class MySession implements Serializable {
 
 	public void setExpirationDate(Date expirationDate) {
 		this.expirationDate = expirationDate;
+	}
+	
+	public void setExpirationDate(String expirationDate){
+		Calendar cal = Calendar.getInstance();
+		SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
+		try {
+			cal.setTime(sdf.parse(expirationDate));
+			this.setExpirationDate(cal.getTime());
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 	}
 }

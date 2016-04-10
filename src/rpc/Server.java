@@ -149,6 +149,11 @@ public class Server implements Runnable {
 			System.out.println("RPC Server Write: Session information was not found. Creating new session");
 			session = new MySession(sessionID, versionNumber, message, expirationTime);
 			SessionManager.sessionInformation.put(sessionID, session);
+		} else {
+			System.out.println("RPC Server Write: Session information was found. Incrementing version number");
+			SessionManager.sessionInformation.get(sessionID).setVersionNumber(versionNumber);
+			SessionManager.sessionInformation.get(sessionID).setMessage(message);
+			SessionManager.sessionInformation.get(sessionID).setExpirationDate(expirationTime);
 		}
 		
 		byte[] outBuf = (callID + '_' + session).toString().getBytes();
