@@ -143,12 +143,12 @@ public class Server implements Runnable {
 			SessionManager.sessionInformation.put(sessionID, session);
 		}
 		
-		//NOTE: May not be a valid case but just in case the version numbers
-		//dont match. Should never happen!
-		if(session.getVersionNumber() != versionNumber){
-			System.out.println("Invalid version number received");
-			return null;
-		}
+//		//NOTE: May not be a valid case but just in case the version numbers
+//		//dont match. Should never happen!
+//		if(session.getVersionNumber() != versionNumber){
+//			System.out.println("Invalid version number received");
+//			return null;
+//		}
 		
 		byte[] outBuf = (callID + '_' + session).toString().getBytes();
 		return outBuf;

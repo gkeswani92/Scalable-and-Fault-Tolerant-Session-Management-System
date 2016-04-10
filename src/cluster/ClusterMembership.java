@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class ClusterMembership {
 	
@@ -18,6 +19,16 @@ public class ClusterMembership {
 	public static void collectClusterData(){
 		membership = getMemberIPAddress(FILEPATH_NAME);
 		ipToAMI = getIPToAMIMapping(membership);
+	}
+	
+	public static String getIPFromAMI(Integer ami) {
+		collectClusterData();
+		for (Entry<String, Integer> e : ipToAMI.entrySet()) {
+		    if(e.getValue().equals(ami)) {
+		    	return e.getKey();
+		    }
+		}
+		return null;
 	}
 	
 	public static Map<String,Integer> getIPToAMIMapping(Map<Integer,List<String>> membership){

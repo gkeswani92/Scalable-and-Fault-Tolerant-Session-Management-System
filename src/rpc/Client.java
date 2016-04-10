@@ -82,7 +82,8 @@ public class Client {
 		//Getting the addresses of the instances that have the required data
 		//and sending the request to all of them
 		
-		for(String destIp: ipAddress){
+		for(String ami: ipAddress){
+			String destIp = ClusterMembership.getIPFromAMI(Integer.valueOf(ami));
 			System.out.println("RPC Client: Sent packet to "+destIp);
 			DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length, 
 					InetAddress.getByName(destIp), portProj1bRPC);
@@ -180,7 +181,7 @@ public class Client {
 				rpcSocket.send(sendPkt);
 			}
 			
-			//Continue probing for successful responses until we get enought
+			//Continue probing for successful responses until we get enough
 			//successes or we run out of servers 
 			System.out.println("RPC Client: waiting for responses from WQ instances");
 			int responses = 0;

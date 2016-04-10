@@ -24,6 +24,7 @@ public class MyCookie extends Cookie{
 		this.versionNumber = versionNumber;
 		this.locationData = locationData;
 		this.setMaxAge(expiration);
+		super.setDomain(".tmm259.bigdata.systems");
 	}
 	
 	/**
