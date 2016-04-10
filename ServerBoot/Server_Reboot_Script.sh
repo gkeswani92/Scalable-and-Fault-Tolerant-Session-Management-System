@@ -1,5 +1,6 @@
 #!/bin/bash -ex
 echo "Updating"
+sudo su
 yum update -y
 echo "Updated"
 aws configure set aws_access_key_id AKIAISOAOQKZPNRSDTCA
