@@ -69,16 +69,23 @@ public class Servlet extends HttpServlet {
 			wqaddress = entry.getValue();
 		}
 		
-		//Retrieving the newly created cookie and sending it back in the response
-		newCookie = new MyCookie(newSession.getSessionID(), newSession.getVersionNumber(), 
-				new LocationMetadata(wqaddress), MySession.AGE);
-		response.addCookie(newCookie);
-		System.out.println("Servlet: Added the new cookie in the response");
-				
-		//Render the web page with the details
-		displayWebPage(response, newCookie, newSession);
-		
-		System.out.println(" ");
+		//Render the web page if session was found/created. Else display error page
+		if(newSession != null){
+			//Retrieving the newly created cookie and sending it back in the response
+			newCookie = new MyCookie(newSession.getSessionID(), newSession.getVersionNumber(), 
+					new LocationMetadata(wqaddress), MySession.AGE);
+			response.addCookie(newCookie);
+			System.out.println("Servlet: Added the new cookie in the response");
+					
+			//Render the web page with the details
+			displayWebPage(response, newCookie, newSession);
+			
+			System.out.println(" ");
+		} else {
+			PrintWriter out = response.getWriter();
+			out.println("Could not display web page as session could not be found/created");
+			return;
+		}
 	}
 
 	@Override
