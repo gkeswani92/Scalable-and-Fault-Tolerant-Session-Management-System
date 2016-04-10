@@ -30,7 +30,7 @@ public class Client {
 	private static final Double WQ = 0.5;
 	private static final Double W = 0.75;
 	
-	public String[] sessionRead(String sessionId, LocationMetadata locationData) {
+	public String[] sessionRead(String sessionId, LocationMetadata locationData, Integer versionNumber) {
 		
 		System.out.println("RPC Client: Reading session data");  
 		

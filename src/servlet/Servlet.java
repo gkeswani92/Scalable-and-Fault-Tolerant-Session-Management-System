@@ -17,6 +17,7 @@ import cluster.Instance;
 import cookie.LocationMetadata;
 import cookie.MyCookie;
 import rpc.Client;
+import rpc.RPCInfo;
 import rpc.Server;
 import rpc.SessionCleanerThread;
 import session.MySession;
@@ -51,6 +52,7 @@ public class Servlet extends HttpServlet {
 		MySession newSession = null;
 		MyCookie newCookie = null;
 		List<String> wqaddress = null;
+		String svrID = null;
 		
 		System.out.println("Servlet: Ami index: "+Instance.getAmiIndex());
 		System.out.println("Servlet: Ip address: "+Instance.getIpAddr());
@@ -62,13 +64,11 @@ public class Servlet extends HttpServlet {
 		Cookie cookie = findCorrectCookie(cookies);
 		
 		//Gets the session if it already exists, otherwise creates a new one
-		Map<MySession, List<String>> session_location_data = getSession(cookie);
-		for (Map.Entry<MySession, List<String>> entry : session_location_data.entrySet())
-		{
-			newSession = entry.getKey();
-			wqaddress = entry.getValue();
-		}
-		
+		RPCInfo sessionInfo = getSession(cookie);
+		newSession = sessionInfo.getSession();
+		wqaddress = sessionInfo.getLocations();
+		svrID = sessionInfo.getServerID();
+	
 		//Render the web page if session was found/created. Else display error page
 		if(newSession != null){
 			//Retrieving the newly created cookie and sending it back in the response
@@ -78,7 +78,7 @@ public class Servlet extends HttpServlet {
 			System.out.println("Servlet: Added the new cookie in the response");
 					
 			//Render the web page with the details
-			displayWebPage(response, newCookie, newSession);
+			displayWebPage(response, newCookie, newSession, svrID);
 			
 			System.out.println(" ");
 		} else {
@@ -94,6 +94,7 @@ public class Servlet extends HttpServlet {
 		
 		List<String> wqaddress = null;
 		MySession session = null;
+		String svrID = null;
 		
 		//Get all the cookies that were received in the request and find the one 
 		//that was sent by our server. There has to be one since this is a POST
@@ -103,12 +104,10 @@ public class Servlet extends HttpServlet {
 		Cookie cookie = findCorrectCookie(cookies);
 		
 		//Getting the session and the location metadata
-		Map<MySession, List<String>> session_location_data = getSession(cookie);
-		for (Map.Entry<MySession, List<String>> entry : session_location_data.entrySet())
-		{
-			session = entry.getKey();
-			wqaddress = entry.getValue();
-		}
+		RPCInfo sessionInfo = getSession(cookie);
+		session = sessionInfo.getSession();
+		wqaddress = sessionInfo.getLocations();
+		svrID = sessionInfo.getServerID();
 		
 		//If the cookie had a stale session that has been discarded, we need to
 		//create a new session and a new cookie
@@ -150,7 +149,7 @@ public class Servlet extends HttpServlet {
 		//latest cookie to the client
 		MyCookie myCookie = new MyCookie(session.getSessionID(), session.getVersionNumber(), new LocationMetadata(wqaddress), MySession.AGE);
 		response.addCookie(myCookie);
-		displayWebPage(response, myCookie, session);
+		displayWebPage(response, myCookie, session, svrID);
 		
 		System.out.println(" ");
 	}
@@ -184,11 +183,11 @@ public class Servlet extends HttpServlet {
 	 * @param cookie
 	 * @return
 	 */
-	private Map<MySession, List<String>> getSession(Cookie cookie) {
+	private RPCInfo getSession(Cookie cookie) {
 
 		//Create a new session or refresh an existing one depending on whether
 		//a cookie was passed to us by the browser that was created by us		
-		Map<MySession, List<String>> data = new HashMap<MySession, List<String>>();
+		RPCInfo communicationInfo = null;
 		MySession newSession;
 		
 		//Created a new session and added it to the session table
@@ -202,7 +201,8 @@ public class Servlet extends HttpServlet {
 			//other nodes and gather the ami indexes of nodes that responded 
 			//successfully
 			System.out.println("Servlet: New session data is to be transmitted to other instances");
-			data.put(newSession, sessionWriteHelper(newSession));
+			
+			communicationInfo = new RPCInfo(newSession, sessionWriteHelper(newSession), Instance.getAmiIndex().toString());
 			System.out.println("Servlet: Consensus has been received");
 		} 
 		
@@ -215,15 +215,16 @@ public class Servlet extends HttpServlet {
 			String cookieDetails = cookie.getValue();
 		    String[] cookie_params = cookieDetails.split("_");
 	        String sessionID = cookie_params[0];
+	        Integer versionNumber = Integer.parseInt(cookie_params[1]);
 	        LocationMetadata locationData = new LocationMetadata(cookie_params[2]);
 		    System.out.println("Servlet: Session ID: " + sessionID + " and "
 		    		+ "Locations: "+locationData.toString());
 	        
 			//Calling session read using the RPC client to get data back from the
 			//first instance that replies
-		    String[] sessionData = rpcClient.sessionRead(sessionID, locationData);
+		    String[] sessionData = rpcClient.sessionRead(sessionID, locationData, versionNumber);
 			
-		    if(sessionData.length == 5){
+		    if(sessionData.length == 6){
 				newSession = new MySession(sessionData[1], Integer.parseInt(sessionData[2]), 
 						sessionData[3], sessionData[4]);
 				newSession.refreshSession();
@@ -231,12 +232,12 @@ public class Servlet extends HttpServlet {
 				System.out.println("Servlet: Session data has been gathered from "
 						+ "another instance and has been stored in the local table");
 				
-				data.put(newSession, sessionWriteHelper(newSession));
+				communicationInfo = new RPCInfo(newSession, sessionWriteHelper(newSession), sessionData[5]);
 		    } else {
 		    	System.out.println("Servlet: Session data received was of invalid length: "+sessionData.length);
 		    }
 		}
-		return data;
+		return communicationInfo;
 	}
 	
 	public List<String> sessionWriteHelper(MySession sess) {
@@ -250,7 +251,7 @@ public class Servlet extends HttpServlet {
 	}
 	
 	public void displayWebPage(HttpServletResponse response, MyCookie newCookie, 
-						MySession newSession) throws IOException{
+						MySession newSession, String svrID) throws IOException{
 		
 		PrintWriter out = response.getWriter();
 		Calendar cal = Calendar.getInstance();
@@ -258,13 +259,13 @@ public class Servlet extends HttpServlet {
 		out.println("<html>");
 		out.println("<head> <title>Gaurav Keswani - gk368</title> </head>");
 		out.println("<body>");
-		out.println("<div class = 'row'>");
-		out.println("<b>NetID:</b> gk368");
-		out.println("<b>Session:</b>" + newCookie.getSessionID());
-		out.println("<b>Version: </b>" + newCookie.getVersionNumber());
-		out.println("<b>Date:</b>" + cal.getTime());
-		out.println("</div>");
+		out.println("<br/><b>NetID:</b> gk368");
+		out.println("<br/><b>Session:</b>" + newCookie.getSessionID());
+		out.println("<br/><b>Version: </b>" + newCookie.getVersionNumber());
+		out.println("<br/><b>Date:</b>" + cal.getTime());
+		out.println("<br/><br/>");
 		out.println("<h1>" + newSession.getMessage() + "</h1>");
+		
 		out.println("<form method='POST' action='/Session_Management/'>");
 		out.println("<div class='container'>");
 		out.println("<div class = 'row'>");
@@ -278,18 +279,14 @@ public class Servlet extends HttpServlet {
 		out.println("<input type='submit' id='logout' name='logout' value='Logout' />");
 		out.println("</div");
 		out.println("</div>");
-		out.println("<br/><br/>");
-		out.println("<div class = 'row'>");
-		out.println("<b>Cookie: </b>" + newCookie.toString());
-		out.println("<b>Expires: </b> " + newSession.getExpirationDate());
-		out.println("</div>");
-		out.println("<br/><br/>");
-		out.println("<div class = 'row'>");
-		out.println("<b>Server ID: </b> " + Instance.getAmiIndex());
-		out.println("<b>Reboot Count: </b> " + Instance.getRebootCount());
-		out.println("<b>Cookie Domain: </b> " + newCookie.getDomain());
-		out.println("</div>");
 		out.println("</form>");
+		out.println("<br/><br/>");
+		out.println("<b>Cookie: </b>" + newCookie.toString());
+		out.println("<br/><b>Expires: </b> " + newSession.getExpirationDate());
+		out.println("<br/><b>Current Server ID: </b> " + Instance.getAmiIndex());
+		out.println("<br/><b>Reboot Count: </b> " + Instance.getRebootCount());
+		out.println("<br/><b>Cookie Domain: </b> " + newCookie.getDomain());
+		out.println("<br/><b>Server ID Serving Data: </b> " + svrID);
 		out.println("</body>");
 		out.println("<html>");
 	}

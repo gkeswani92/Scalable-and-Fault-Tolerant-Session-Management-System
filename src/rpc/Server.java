@@ -5,6 +5,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+
+import cluster.Instance;
 import session.MySession;
 import session.SessionManager;
 
@@ -99,9 +101,15 @@ public class Server implements Runnable {
 		SessionManager.displaySessionTable();
 		MySession session = SessionManager.sessionInformation.get(sessionID);
 		
+		//Check if version number being requested is what you have
+//		if(session.getVersionNumber() != versionNumber){
+//			System.out.println("Invalid version number received");
+//			return null;
+//		}
+		
 		if(session != null){
 			//Populate the output buffer and return
-			String obuf = (callID + '_' + session.toString());
+			String obuf = (callID + '_' + session.toString() + '_' + Instance.getAmiIndex());
 			System.out.println("RPC Server Read: Sending session data back to client: "+obuf);
 			return obuf.getBytes();
 		} else {
@@ -139,13 +147,6 @@ public class Server implements Runnable {
 			session = new MySession(sessionID, versionNumber, message, expirationTime);
 			SessionManager.sessionInformation.put(sessionID, session);
 		}
-		
-//		//NOTE: May not be a valid case but just in case the version numbers
-//		//dont match. Should never happen!
-//		if(session.getVersionNumber() != versionNumber){
-//			System.out.println("Invalid version number received");
-//			return null;
-//		}
 		
 		byte[] outBuf = (callID + '_' + session).toString().getBytes();
 		return outBuf;
