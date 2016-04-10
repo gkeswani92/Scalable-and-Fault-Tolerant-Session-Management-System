@@ -44,7 +44,7 @@ public class Client {
 			rpcSocket.setSoTimeout(TIMEOUT);
 			
 			//Sending read request to other RPC servers
-			sendReadRequest(sessionId, callID, rpcSocket, ipAddress);
+			sendReadRequest(sessionId, callID, rpcSocket, ipAddress, versionNumber);
 			
 			//Wait for response from one of the RPC servers
 			DatagramPacket recvPkt = getResponseForReadRequest(callID, rpcSocket, ipAddress);
@@ -71,11 +71,11 @@ public class Client {
 	 * cookie
 	 */
 	private void sendReadRequest(String sessionId, String callID, DatagramSocket 
-			rpcSocket, List<String> ipAddress) throws UnknownHostException, IOException {
+			rpcSocket, List<String> ipAddress, Integer versionNumber) throws UnknownHostException, IOException {
 		
 		//Fill outBuf with [ callID, operationSESSIONREAD, sessionID, version ]
 		String obuf = callID + DELIMITER + operationSESSIONREAD + DELIMITER 
-				+  sessionId;
+				+  sessionId + DELIMITER + versionNumber;
 		byte[] outBuf = obuf.getBytes();
 		System.out.println("RPC Client: Generated the data that is to be sent: "+obuf);
 		

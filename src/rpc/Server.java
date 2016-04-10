@@ -89,8 +89,8 @@ public class Server implements Runnable {
 	public byte[] sessionRead(String[] requestParams){
 		
 		//Extracting the params that tell us what data and version is being requested
-		if(requestParams.length != 3){
-			System.out.println("RPC Server: Invalid request params received: "+requestParams);
+		if(requestParams.length != 4){
+			System.out.println("RPC Server Read: Invalid request params received: "+requestParams);
 			return null;
 		}
 		
@@ -98,26 +98,29 @@ public class Server implements Runnable {
 		//requested session id
 		String callID = requestParams[0];
 		String sessionID = requestParams[2];
+		Integer versionNumber = Integer.parseInt(requestParams[3]);
 		SessionManager.displaySessionTable();
 		MySession session = SessionManager.sessionInformation.get(sessionID);
-		
-		//Check if version number being requested is what you have
-//		if(session.getVersionNumber() != versionNumber){
-//			System.out.println("Invalid version number received");
-//			return null;
-//		}
-		
+
 		if(session != null){
-			//Populate the output buffer and return
-			String obuf = (callID + '_' + session.toString() + '_' + Instance.getAmiIndex());
-			System.out.println("RPC Server Read: Sending session data back to client: "+obuf);
-			return obuf.getBytes();
+			//Check if version number being requested is what you have stored locally
+			//This is important in case a server rebooted and lost some information
+			if(!session.getVersionNumber().equals(versionNumber)){
+				System.out.println("RPC Server Read: Invalid version number received. Don't have this data locally stored");
+				return null;
+			} else {			
+				//Populate the output buffer and return with the session and server id
+				System.out.println("RPC Server Read: Valid version number received");
+				String obuf = (callID + '_' + session.toString() + '_' + Instance.getAmiIndex());
+				System.out.println("RPC Server Read: Sending session data back to client: "+obuf);
+				return obuf.getBytes();
+			}
 		} else {
+			System.out.println("RPC Server Read: Session info for this session id was not found locally");
 			return null;
 		}
 	}
 		
-	
 	/**
 	 * Read the request params received by the server and return the session 
 	 * data corresponding to that request
@@ -143,7 +146,7 @@ public class Server implements Runnable {
 		MySession session = SessionManager.sessionInformation.get(sessionID);
 		
 		if(session == null){
-			System.out.println("RPC Server: Session information was not found. Creating new session");
+			System.out.println("RPC Server Write: Session information was not found. Creating new session");
 			session = new MySession(sessionID, versionNumber, message, expirationTime);
 			SessionManager.sessionInformation.put(sessionID, session);
 		}
