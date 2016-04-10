@@ -28,6 +28,7 @@ public class Client {
 	
 	//Tunable parameters to maintain 1 resiliency
 	private static final Double WQ = 0.5;
+	private static final Double R = 0.75;
 	private static final Double W = 0.75;
 	
 	public String[] sessionRead(String sessionId, LocationMetadata locationData, Integer versionNumber) {
@@ -81,8 +82,9 @@ public class Client {
 		
 		//Getting the addresses of the instances that have the required data
 		//and sending the request to all of them
-		
-		for(String ami: ipAddress){
+		System.out.println("Choosing random servers to send the read request");
+		List<String> destionationIP = getRandomDestionations(ipAddress, R);
+		for(String ami: destionationIP){
 			String destIp = ClusterMembership.getIPFromAMI(Integer.valueOf(ami));
 			System.out.println("RPC Client: Sent packet to "+destIp);
 			DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length, 
@@ -171,9 +173,9 @@ public class Client {
 			System.out.println("RPC Client: Sending write request to other instances");
 			List<String> destinationIPAddresses = ClusterMembership.getMemberIPAddress();
 			int numServers = destinationIPAddresses.size();
-			List<String> wChosenDestionationIP = getWRandomDestionations(destinationIPAddresses);
+			List<String> wChosenDestionationIP = getRandomDestionations(destinationIPAddresses, W);
 			
-			System.out.println("RPC Client: Chose " + wChosenDestionationIP.size() + " instances out of "+destinationIPAddresses.size() + "at random");
+			System.out.println("RPC Client: Chose " + wChosenDestionationIP.size() + " instances out of "+destinationIPAddresses.size() + " at random");
 			for(String destIp: wChosenDestionationIP){
 				System.out.println("RPC Client: sending to "+destIp);
 				DatagramPacket sendPkt = new DatagramPacket(outBuf, outBuf.length, 
@@ -236,10 +238,10 @@ public class Client {
 		}
 	}
 	
-	private List<String> getWRandomDestionations(List<String> destinationIPAddresses) {
+	private List<String> getRandomDestionations(List<String> destinationIPAddresses, Double ratio) {
 		long seed = System.nanoTime();
 		Collections.shuffle(destinationIPAddresses, new Random(seed));
-		return destinationIPAddresses.subList(0, (int) Math.ceil(destinationIPAddresses.size() * W));
+		return destinationIPAddresses.subList(0, (int) Math.ceil(destinationIPAddresses.size() * ratio));
 	}
 
 	public static int getOperationsessionread() {
