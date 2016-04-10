@@ -11,7 +11,7 @@ public class Instance {
     	private static Integer amiIndex;
     	private static String ipAddr;
     	private static Integer rebootCount;
-    	
+    	    	
     	public static void getLatestInstanceInfo(){
     		
     		FileReader input = null;
@@ -28,7 +28,8 @@ public class Instance {
 			try {
 				while ((currentLine = bufRead.readLine()) != null)
 				{    
-					if (currentLine.isEmpty()) break;
+					if (currentLine.isEmpty()) 
+						break;
 
 					if(lineCount == 0){
 						setAmiIndex(Integer.parseInt(currentLine.substring(6)));

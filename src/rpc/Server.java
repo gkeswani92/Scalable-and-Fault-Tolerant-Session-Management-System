@@ -5,9 +5,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-
-import org.apache.catalina.tribes.util.Arrays;
-
 import session.MySession;
 import session.SessionManager;
 

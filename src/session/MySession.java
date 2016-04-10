@@ -8,9 +8,12 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
+import cluster.Instance;
+
 public class MySession implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
+	private static Integer session_num = 1;
 	private String sessionID;
 	private String message;
 	private int versionNumber;
@@ -20,8 +23,11 @@ public class MySession implements Serializable {
 	
 	public MySession(){
 		
-		// Setting information that also needs to be passed to the cookie
-		this.setSessionID(UUID.randomUUID().toString().replaceAll("[^\\d.]", ""));
+		// Setting the session id and increment the sesison number for this instance
+		this.setSessionID(Instance.getAmiIndex()+"-"+Instance.getRebootCount()+"-"+session_num);
+		session_num++;
+		
+		// Setting the default message and version number for a new session
 		this.message = "Hello, User!";
 		this.setVersionNumber(1);
 		
@@ -45,12 +51,8 @@ public class MySession implements Serializable {
 		Calendar cal = Calendar.getInstance();
 		this.setTimeOfCreation(cal.getTime());
 		
-		//TODO: Need to set the expiration data by figuring out how to convert
-		//string to Calender date
 		SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
-//		Date expirationDate;
 		try {
-//			expirationDate = sdf.parse(expirationTime);
 			cal.setTime(sdf.parse(expirationTime));
 			this.setExpirationDate(cal.getTime());
 		} catch (ParseException e) {
