@@ -255,9 +255,9 @@ public class Servlet extends HttpServlet {
 		Calendar cal = Calendar.getInstance();
 		
 		out.println("<html>");
-		out.println("<head> <title>Gaurav Keswani - gk368</title> </head>");
+		out.println("<head> <title>gk368, tmm259, bi49</title> </head>");
 		out.println("<body>");
-		out.println("<br/><b>NetID:</b> gk368");
+		out.println("<br/><b>NetID's:</b> gk368, tmm259, bi49");
 		out.println("<br/><b>Session:</b>" + newCookie.getSessionID());
 		out.println("<br/><b>Version: </b>" + newCookie.getVersionNumber());
 		out.println("<br/><b>Date:</b>" + cal.getTime());
