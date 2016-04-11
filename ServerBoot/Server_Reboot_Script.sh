@@ -15,8 +15,10 @@ reboot_count=$(aws sdb get-attributes --domain-name "Server_Table" --item-name $
 ((reboot_count++))
 aws sdb put-attributes --domain-name "Server_Table" --item-name $ami_value --attributes Name="REBOOT",Value=$reboot_count,Replace=true
 sleep 6
-aws sdb select --select-expression "select * from Server_Table" --output text --no-paginate > servers.txt
-aws sdb select --select-expression "select * from Server_Table where itemName() = '$ami_value'" --output text --no-paginate > instance_info.txt
+aws sdb select --select-expression "select * from Server_Table" --output text --no-paginate > /servers.txt
+aws sdb select --select-expression "select * from Server_Table where itemName() = '$ami_value'" --output text --no-paginate > /instance_info.txt
 echo "DB - Finalized"
 sudo service tomcat8 start
 echo "TOMCAT STARTED"
+sleep 6
+tail -20 /instance_info.txt
