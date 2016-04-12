@@ -1,0 +1,15 @@
+For our start script, we chose to use the format provided on Piazza by having the two; launch.sh and install-my-app.sh scripts. Since the main idea of making a robust start-script is “making sure the steps in your installation script can be run more than once” we have analyzed and “hardened” our start-script to support recovery from an instance crashing during the installation script.  We can analyze the “hardness” of our start script by the following points:
+
+1.	Installing tomcat8 once again does no harm
+
+2.	Copying from s3 storage does no harm since we over-write the old file
+
+3.	Wget creates folders, but if a file with the same name already exists it does not over-write it rather creates a file with name.(1), name.(2) etc. As our script might have crashed (due to a power outage so forth. After having created files, so there might be conflicts). We are aware that an extra file with name.(1) extension would do no harm to the system; however we don’t want to pollute our environment with files we don’t need. So we use rm nam* to get rid of extra files if they were created due to some conflict of names as mentioned before.
+
+4.	In our simpledb code, we have set the Replace=true flag to true, so that even if a some values were corrupt we can just overwrite them, making sure that the simpledb is stable. If we don’t set this flag to true, sdb just creates new attributes with same names, which is definitely not what we want
+
+5.	Since our system needs to register all the other instances by reading their values from the db, our server waits in a while loop while the number of attributes in the db is not equal to number of instances multiplied by number of attributes per instance in the simpledb.. Thus all our servers make sure that the “whole” system is stable before starting, they idle while others have yet to register to simpledb properly.
+
+6.	When we query our database to collect all the metadata for the other instances we write (re-direct) to a file. Since we are not appending to a file but rather over-writing it; this should also work.
+
+As mentioned, our reboot script just incorporates sudo for some operations as they need root access to run. Otherwise it’s the exact same script as our start script, they are  idempotent.
