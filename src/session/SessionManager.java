@@ -1,4 +1,5 @@
 package session;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -47,7 +48,13 @@ public class SessionManager extends HttpServlet{
 			Iterator<Entry<String, MySession>> i = sessionInformation.entrySet().iterator();
 			while(i.hasNext()){
 				Entry<String, MySession> sessionEntry = i.next();
-				if(sessionEntry.getValue().getExpirationDate().before(new Date())){
+				
+				// Subtracting delta of 3 seconds from current time to get discard time
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(new Date());
+				cal.add(Calendar.SECOND, -3);
+				
+				if(sessionEntry.getValue().getExpirationDate().before(cal.getTime())){
 					System.out.println("Clean up Thread: Cleaned up an expired session: "+sessionEntry.getKey());
 					i.remove();
 				}
