@@ -1,33 +1,40 @@
 #!/bin/bash -ex
+sudo su
 S3_BUCKET=cs5300s16-bi49-tmm259-gk368
+#set to number of instances to launch (even if the installation script fails, since this script )
 NUM_INSTANCES=3
 NUM_ATRB_PER_INSTANCE=3
 echo "Updating"
 yum update -y
 echo "Updated"
+#Set Credentials
 aws configure set aws_access_key_id AKIAISOAOQKZPNRSDTCA
 aws configure set aws_secret_access_key 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
 aws configure set default.region us-east-1
 echo "AWS CONFIGURED"
+#Install Tomcat
 yum -y install tomcat8-webapps tomcat8-docs-webapp tomcat8-admin-webapps
 echo "TOMCAT INSTALLED"
 echo "COPYING WAR FILE (project1b.war), from S3_BUCKET into tomcat8 tomcat8-webapps!!"
 aws s3 cp s3://${S3_BUCKET}/Session_Management.war /var/lib/tomcat8/webapps/Session_Management.war
+sudo rm local-ipv*
+sudo rm ami-launch-inde*
+sudo rm public-hostnam*
 echo "Getting IP Addr"
 wget http://169.254.169.254/latest/meta-data/local-ipv4
 ip_value=$(<local-ipv4)
 echo "$ip_value"
-rm local-ipv*
+sudo rm local-ipv*
 echo "Getting AMI-Launch_Index Addr"
 wget http://169.254.169.254/latest/meta-data/ami-launch-index
 ami_value=$(<ami-launch-index)
 echo "$ami_value"
-rm ami-launch-inde*
+sudo rm ami-launch-inde*
 echo "Getting public-hostname"
 wget http://169.254.169.254/latest/meta-data/public-hostname
 public_value=$(<public-hostname)
 echo "$public_value"
-rm public-hostnam*
+sudo rm public-hostnam*
 aws configure set preview.sdb true
 aws configure set aws_access_key_id AKIAISOAOQKZPNRSDTCA
 aws configure set aws_secret_access_key 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
