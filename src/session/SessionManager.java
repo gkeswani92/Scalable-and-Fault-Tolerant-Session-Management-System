@@ -10,6 +10,7 @@ public class SessionManager extends HttpServlet{
 
 	private static final long serialVersionUID = 1L;
 	public static ConcurrentHashMap<String, MySession> sessionInformation;
+	private static final int DISCARD_DELAY = -1;
 	
 	public SessionManager(){
 		sessionInformation = new ConcurrentHashMap<String, MySession>();
@@ -49,10 +50,10 @@ public class SessionManager extends HttpServlet{
 			while(i.hasNext()){
 				Entry<String, MySession> sessionEntry = i.next();
 				
-				// Subtracting delta of 3 seconds from current time to get discard time
+				// Subtracting delta of 1 seconds from current time to get discard time
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(new Date());
-				cal.add(Calendar.SECOND, -3);
+				cal.add(Calendar.SECOND, DISCARD_DELAY);
 				
 				if(sessionEntry.getValue().getExpirationDate().before(cal.getTime())){
 					System.out.println("Clean up Thread: Cleaned up an expired session: "+sessionEntry.getKey());
