@@ -18,5 +18,4 @@ aws configure set aws_access_key_id AKIAISOAOQKZPNRSDTCA
 aws configure set aws_secret_access_key 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
 aws configure set default.region us-east-1
 
-#aws s3 cp project1b.war s3://${S3_BUCKET}/Session_Management.war, NOT NEEDED done in install-my-app.sh already
 aws ec2 run-instances --image-id ${AMI} --count $NUM_INSTANCES --instance-type t2.micro --user-data file://install-my-app.sh --key-name CS5300_Proj1_bi49

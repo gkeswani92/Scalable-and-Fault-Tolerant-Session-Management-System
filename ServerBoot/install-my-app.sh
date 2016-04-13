@@ -2,6 +2,7 @@
 S3_BUCKET=cs5300s16-bi49-tmm259-gk368
 NUM_INSTANCES=5
 NUM_ATRB_PER_INSTANCE=3
+F=1
 echo "Updating"
 yum update -y
 echo "Updated"
@@ -66,6 +67,8 @@ fi
 
 aws sdb select --select-expression "select * from Server_Table" --output text --no-paginate > /servers.txt
 aws sdb select --select-expression "select * from Server_Table where itemName() = '$ami_value'" --output text --no-paginate > /instance_info.txt
+echo $NUM_INSTANCES > /extra.txt
+echo $F >> /extra.txt
 echo "DB - Finalized"
 service tomcat8 start
 echo "TOMCAT STARTED"
