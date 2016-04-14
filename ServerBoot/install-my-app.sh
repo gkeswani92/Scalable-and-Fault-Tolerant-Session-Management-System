@@ -1,9 +1,9 @@
 #!/bin/bash -ex
 S3_BUCKET=cs5300s16-bi49-tmm259-gk368
-NUM_INSTANCES=5
+NUM_INSTANCES=3
 NUM_ATRB_PER_INSTANCE=3
 #Note: NUM_INSTANCES should be greater than or equal to 2F+1 
-F=2
+F=1
 if [ $((2*F+1)) -gt $NUM_INSTANCES ]
 then
 echo '2F+1 > N'

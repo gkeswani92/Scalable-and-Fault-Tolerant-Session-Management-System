@@ -12,7 +12,7 @@
 
 AMI=ami-08111162
 S3_BUCKET=cs5300s16-bi49-tmm259-gk368
-NUM_INSTANCES=5
+NUM_INSTANCES=3
 
 aws configure set aws_access_key_id AKIAISOAOQKZPNRSDTCA
 aws configure set aws_secret_access_key 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
