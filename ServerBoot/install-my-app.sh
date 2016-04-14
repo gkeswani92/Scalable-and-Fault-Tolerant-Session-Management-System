@@ -6,7 +6,7 @@ NUM_ATRB_PER_INSTANCE=3
 F=1
 if [ $((2*F+1)) -gt $NUM_INSTANCES ]
 then
-echo '2F+1 > N'
+echo '2F+1 > N Invalid Configuration. Exiting!'
 exit 1
 fi
 echo "Updating"
