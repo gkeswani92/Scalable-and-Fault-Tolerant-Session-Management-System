@@ -131,8 +131,12 @@ public class Servlet extends HttpServlet {
 					System.out.println("New state cannot be empty. Not changing it");
 				}
 			} else if(request.getParameter("refresh") != null){
-				
+				//Already taking care of the refresh before this
 			} else {
+				//Sending an expired cookie back to the client so that it doesnt send it back to us
+				MyCookie myCookie = new MyCookie(session.getSessionID(), session.getVersionNumber(), new LocationMetadata(wqaddress), 0);
+				response.addCookie(myCookie);
+				
 				sessionTable.terminateSession(session);
 				PrintWriter out = response.getWriter();
 				out.println("You have been logged out");
