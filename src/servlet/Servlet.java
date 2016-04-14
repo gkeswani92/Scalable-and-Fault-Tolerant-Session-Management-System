@@ -66,22 +66,28 @@ public class Servlet extends HttpServlet {
 		
 		//Gets the session if it already exists, otherwise creates a new one
 		RPCInfo sessionInfo = getSession(cookie);
-		newSession = sessionInfo.getSession();
-		wqaddress = sessionInfo.getLocations();
-		svrID = sessionInfo.getServerID();
-	
-		//Render the web page if session was found/created. Else display error page
-		if(newSession != null){
-			//Retrieving the newly created cookie and sending it back in the response
-			newCookie = new MyCookie(newSession.getSessionID(), newSession.getVersionNumber(), 
-					new LocationMetadata(wqaddress), MySession.AGE);
-			response.addCookie(newCookie);
-			System.out.println("Servlet: Added the new cookie in the response");
-					
-			//Render the web page with the details
-			displayWebPage(response, newCookie, newSession, svrID);
-			
-			System.out.println(" ");
+		if(sessionInfo != null){
+			newSession = sessionInfo.getSession();
+			wqaddress = sessionInfo.getLocations();
+			svrID = sessionInfo.getServerID();
+		
+			//Render the web page if session was found/created. Else display error page
+			if(newSession != null){
+				//Retrieving the newly created cookie and sending it back in the response
+				newCookie = new MyCookie(newSession.getSessionID(), newSession.getVersionNumber(), 
+						new LocationMetadata(wqaddress), MySession.AGE);
+				response.addCookie(newCookie);
+				System.out.println("Servlet: Added the new cookie in the response");
+						
+				//Render the web page with the details
+				displayWebPage(response, newCookie, newSession, svrID);
+				
+				System.out.println(" ");
+			} else {
+				PrintWriter out = response.getWriter();
+				out.println("Could not display web page as session could not be found/created");
+				return;
+			}
 		} else {
 			PrintWriter out = response.getWriter();
 			out.println("Could not display web page as session could not be found/created");
