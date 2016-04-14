@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import cluster.ClusterMembership;
+import cluster.Infrastructure;
 import cookie.LocationMetadata;
 import session.MySession;
 
@@ -25,11 +26,6 @@ public class Client {
 	private final static String DELIMITER = "_";
 	private final static int TIMEOUT = 1000;
 	public  final static int MAX_PACKET_SIZE = 4096;
-	
-	//Tunable parameters to maintain 1 resiliency
-	private static final Double WQ = 0.5;
-	private static final Double R = 0.75;
-	private static final Double W = 0.75;
 	
 	public String[] sessionRead(String sessionId, LocationMetadata locationData, Integer versionNumber) {
 		
@@ -83,7 +79,7 @@ public class Client {
 		//Getting the addresses of the instances that have the required data
 		//and sending the request to all of them
 		System.out.println("Choosing random servers to send the read request");
-		List<String> destionationIP = getRandomDestionations(ipAddress, R);
+		List<String> destionationIP = getRandomDestionations(ipAddress, Infrastructure.getR());
 		for(String ami: destionationIP){
 			String destIp = ClusterMembership.getIPFromAMI(Integer.valueOf(ami));
 			System.out.println("RPC Client: Sent packet to "+destIp);
@@ -173,7 +169,7 @@ public class Client {
 			System.out.println("RPC Client: Sending write request to other instances");
 			List<String> destinationIPAddresses = ClusterMembership.getMemberIPAddress();
 			int numServers = destinationIPAddresses.size();
-			List<String> wChosenDestionationIP = getRandomDestionations(destinationIPAddresses, W);
+			List<String> wChosenDestionationIP = getRandomDestionations(destinationIPAddresses, Infrastructure.getW());
 			
 			System.out.println("RPC Client: Chose " + wChosenDestionationIP.size() + " instances out of "+destinationIPAddresses.size() + " at random");
 			for(String destIp: wChosenDestionationIP){
@@ -188,7 +184,7 @@ public class Client {
 			System.out.println("RPC Client: waiting for responses from WQ instances");
 			int responses = 0;
 			int successfulResponses = 0;
-			while(successfulResponses < Math.ceil(WQ * numServers) && responses < numServers){
+			while(successfulResponses < Infrastructure.getWQ() && responses < numServers){
 				byte [] inBuf = new byte[MAX_PACKET_SIZE];
 				DatagramPacket recvPkt = new DatagramPacket(inBuf, inBuf.length);
 				String[] responseParams = null;
@@ -238,10 +234,10 @@ public class Client {
 		}
 	}
 	
-	private List<String> getRandomDestionations(List<String> destinationIPAddresses, Double ratio) {
+	private List<String> getRandomDestionations(List<String> destinationIPAddresses, Integer R) {
 		long seed = System.nanoTime();
 		Collections.shuffle(destinationIPAddresses, new Random(seed));
-		return destinationIPAddresses.subList(0, (int) Math.ceil(destinationIPAddresses.size() * ratio));
+		return destinationIPAddresses.subList(0,R);
 	}
 
 	public static int getOperationsessionread() {

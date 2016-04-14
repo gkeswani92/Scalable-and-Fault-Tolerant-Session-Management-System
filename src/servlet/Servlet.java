@@ -11,6 +11,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import cluster.Infrastructure;
 import cluster.Instance;
 import cookie.LocationMetadata;
 import cookie.MyCookie;
@@ -35,6 +37,7 @@ public class Servlet extends HttpServlet {
 		rpcClient = new Client();
 		sessionCleaner = new SessionCleanerThread();
 		new Thread(sessionCleaner).start();
+		Infrastructure.getLatestInfrastructureInfo();
 	}
 	
 	public void initialize(){
