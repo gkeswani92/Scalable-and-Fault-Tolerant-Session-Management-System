@@ -71,6 +71,9 @@ public class Infrastructure {
 	}
 
 	public static Integer getW() {
+		if (W > N){
+			return N;
+		} 
 		return W;
 	}
 

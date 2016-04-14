@@ -2,7 +2,8 @@
 S3_BUCKET=cs5300s16-bi49-tmm259-gk368
 NUM_INSTANCES=5
 NUM_ATRB_PER_INSTANCE=3
-F=1
+#Note: NUM_INSTANCES should be greater than or equal to 2F+1 
+F=2
 echo "Updating"
 yum update -y
 echo "Updated"
